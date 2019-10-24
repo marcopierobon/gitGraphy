@@ -1,0 +1,83 @@
+{
+  "name": "simple-git-stats",
+  "displayName": "Simple GIT Stats",
+  "description": "Simple and efficient way to view statistics in git repository directly within Visual Studio Code.",
+  "publisher": "Tino",
+  "version": "0.2.4",
+  "engines": {
+    "vscode": "^1.36.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "git",
+    "contribution",
+    "statistics",
+    "stats",
+    "commit",
+    "chart",
+    "analytics",
+    "git stats",
+    "log",
+    "history"
+  ],
+  "repository": {
+    "url": "https://github.com/HoangNguyen17193/vscode-simple-git-stats"
+  },
+  "activationEvents": [
+    "*"
+  ],
+  "homepage": "https://github.com/HoangNguyen17193/vscode-simple-git-stats",
+  "preview": false,
+  "icon": "resources/logo.png",
+  "license": "MIT",
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "GitStats.viewCommits",
+        "title": "Simple Git Stats: View Commits"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Simple GIT Stats",
+      "properties": {
+        "commitChart.showLegend": {
+          "type": "boolean",
+          "default": true
+        },
+        "commitChart.legendPosition": {
+          "type": "string",
+          "default": "right",
+          "enum": [
+            "top",
+            "bottom",
+            "right",
+            "left"
+          ]
+        },
+        "commitChart.width": {
+          "type": "integer"
+        },
+        "commitChart.height": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^10.14.22",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.1",
+    "vscode": "^1.1.28"
+  }
+}
