@@ -89,6 +89,7 @@ export default class CommitsRetriever {
           .slice(0, 9);
 
         return resolve(numberOfChangesPerFileDictInPlotFormat);
+
       });
     });
   }
