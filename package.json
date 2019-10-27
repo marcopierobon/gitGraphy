@@ -37,7 +37,11 @@
     "commands": [
       {
         "command": "GitStats.viewCommits",
-        "title": "Simple Git Stats: View Commits"
+        "title": "gitGraphy: View Commits"
+      },
+      {
+        "command": "GitStats.viewCommitsPerFile",
+        "title": "gitGraphy: View Commits per file"
       }
     ],
     "configuration": {

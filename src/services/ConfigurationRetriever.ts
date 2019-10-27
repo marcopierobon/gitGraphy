@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-export default class Configuration {
+export default class ConfigurationRetriever {
   static getCommitChartConfiguration() {
     const commitChartConfig = vscode.workspace.getConfiguration("commitChart");
     return {  

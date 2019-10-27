@@ -1,12 +1,6 @@
 const  { exec } = require("child_process");
 
-// const authorEmail = '%ae';
-// const date = '%aI';
-// const body = '%b';
-// const format = {date, body, email: authorEmail};
-// const cmd = `git -C ${dir} log --pretty=format:'${JSON.stringify(format)},'`;
-
-export default class Commits {
+export default class CommitsRetriever {
   public static getAllPerAuthor(dir:string) {
     const cmd = `git -C ${dir} shortlog -sn -e --all`;
     return new Promise((resolve, reject) => {
@@ -27,7 +21,7 @@ export default class Commits {
             repoTotalCommits += parseInt(data[0].trim());
         });
 
-        const commitsPerAuthors = lines.map((line:any) => {
+        const commitsPerFile = lines.map((line:any) => {
           const data = line.split('\t');
           return {
             totalCommits: data[0].trim(),
@@ -35,19 +29,18 @@ export default class Commits {
             percentageOfAllCommits:(data[0].trim()/repoTotalCommits * 100).toFixed(2)
           };
         });
-        return resolve(commitsPerAuthors);
+        return resolve(commitsPerFile);
       });
     });
   }
 
 
   public static getCommitsOnAllFiles(dir:string) {
-
     interface LooseObject {
         [key: string]: number
     }
 
-    interface BubbleCharItem {
+    interface BarCharItem {
       label: string;
       occurrences: number;
   }
@@ -61,13 +54,13 @@ export default class Commits {
         if (stderr) {
           return reject(stderr);
         }
-        const lines = stdout.split(/\n/g).slice(0, -1);
+        const gitLogOutputLines = stdout.split(/\n/g).slice(0, -1);
         
         var numberOfChangesPerFileDict: LooseObject = {};
 
-        for(var lineIndex:number = 0; lineIndex < lines.length; lineIndex++)
+        for(var lineIndex:number = 0; lineIndex < gitLogOutputLines.length; lineIndex++)
         {
-            var currentChangedFile: string = lines[lineIndex];
+            var currentChangedFile: string = gitLogOutputLines[lineIndex];
               if(numberOfChangesPerFileDict[currentChangedFile] == null){
                 numberOfChangesPerFileDict[currentChangedFile] = 1;
               }
@@ -75,7 +68,7 @@ export default class Commits {
                 numberOfChangesPerFileDict[currentChangedFile]++;
               }
         }
-        var plotData:BubbleCharItem[] = [];
+        var numberOfChangesPerFileDictInPlotFormat: BarCharItem[] = [];
 
         Object.keys(numberOfChangesPerFileDict)
           .forEach(element => {
@@ -83,23 +76,19 @@ export default class Commits {
               delete numberOfChangesPerFileDict[element];
             }
             else{
-              var plotDataItem: BubbleCharItem = {
+              var numberOfChangesPerFileDictInPlotFormatItem: BarCharItem = {
                 label: element,
                 occurrences: numberOfChangesPerFileDict[element]
             };
-            plotData.push(plotDataItem);
+            numberOfChangesPerFileDictInPlotFormat.push(numberOfChangesPerFileDictInPlotFormatItem);
             }
           });
 
-
-          plotData = plotData
-          .sort((n1:BubbleCharItem,n2:BubbleCharItem) => (n1.occurrences > n2.occurrences) ? -1 : 1)
+          numberOfChangesPerFileDictInPlotFormat = numberOfChangesPerFileDictInPlotFormat
+          .sort((n1:BarCharItem,n2:BarCharItem) => (n1.occurrences > n2.occurrences) ? -1 : 1)
           .slice(0, 9);
 
-        
-        
-
-        return resolve(plotData);
+        return resolve(numberOfChangesPerFileDictInPlotFormat);
       });
     });
   }

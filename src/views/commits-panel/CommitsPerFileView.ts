@@ -2,20 +2,20 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import Constants from '../../utils/constants';
 
-export default class CommitsByAuthorPanel {
-  public static currentPanel: CommitsByAuthorPanel | undefined;
+export default class CommitsPerFilePanel {
+  public static currentPanel: CommitsPerFilePanel | undefined;
 
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(comitsPerAuthor: any, config: any, context:vscode.ExtensionContext) {
+  public static createOrShow(comitsPerFile: any, config: any, context:vscode.ExtensionContext) {
     const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
-    if (CommitsByAuthorPanel.currentPanel) {
-      CommitsByAuthorPanel.currentPanel._panel.reveal(column);
+    if (CommitsPerFilePanel.currentPanel) {
+      CommitsPerFilePanel.currentPanel._panel.reveal(column);
       return;
     }
 
-    const panel = vscode.window.createWebviewPanel("CommitsPanel", "CommitsPerAuthor", column || vscode.ViewColumn.One,
+    const panel = vscode.window.createWebviewPanel("CommitsPanel", "View Commits Per File", column || vscode.ViewColumn.One,
       {
         enableScripts: true
       }
@@ -26,14 +26,14 @@ export default class CommitsByAuthorPanel {
     );
 
     const ChartJSSrc = ChartJSFilePath.with({ scheme: 'vscode-resource' });
-    CommitsByAuthorPanel.currentPanel = new CommitsByAuthorPanel(panel, comitsPerAuthor, config, ChartJSSrc);
+    CommitsPerFilePanel.currentPanel = new CommitsPerFilePanel(panel, comitsPerFile, config, ChartJSSrc);
   }
 
-  private constructor(panel: vscode.WebviewPanel, comitsPerAuthor:any, config:any, ChartJSSrc: vscode.Uri) {
+  private constructor(panel: vscode.WebviewPanel, comitsPerFile:any, config:any, ChartJSSrc: vscode.Uri) {
     this._panel = panel;
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
     this._panel = panel;
-    const webViewContent = this.getWebviewContent(comitsPerAuthor, config, ChartJSSrc);
+    const webViewContent = this.getWebviewContent(comitsPerFile, config, ChartJSSrc);
     this._panel.webview.html = webViewContent;
   }
 
@@ -41,9 +41,9 @@ export default class CommitsByAuthorPanel {
     return `'${stringToIncludeInApostophe}'`;
   }
 
-  private getWebviewContent(comitsPerAuthor: any | [], config:any, ChartJSSrc: vscode.Uri) {
-    const labels = comitsPerAuthor.map((commit:any) => this.compileOccurrentInfo(commit.label));
-    const data = (comitsPerAuthor.map((commit:any) => commit.occurrences));
+  private getWebviewContent(comitsPerFile: any | [], config:any, ChartJSSrc: vscode.Uri) {
+    const labels = comitsPerFile.map((commit:any) => this.compileOccurrentInfo(commit.label));
+    const data = (comitsPerFile.map((commit:any) => commit.occurrences));
     const bodyStyle = (config.width > 0 && config.height >0) ? `body { width:  ${config.width}px; height: ${config.width}px}` : '';
     return `<!DOCTYPE html>
           <html lang="en">
@@ -100,7 +100,7 @@ export default class CommitsByAuthorPanel {
   }
   
     public dispose() {
-      CommitsByAuthorPanel.currentPanel = undefined;
+      CommitsPerFilePanel.currentPanel = undefined;
       // Clean up our resources
       this._panel.dispose();
   
