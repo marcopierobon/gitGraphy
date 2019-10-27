@@ -3,11 +3,14 @@ import Controller from './controllers/mainController';
 
 export function activate(context: vscode.ExtensionContext) {
   const controller = new Controller(context);
-  let disposable = vscode.commands.registerCommand("GitStats.viewCommits",() => {
+  let viewCommitsDisposable = vscode.commands.registerCommand("GitStats.viewCommits",() => {
     controller.showCommitsPanel();
-  }
-  );
-  context.subscriptions.push(disposable);
+  });
+  let viewCommitsByAuthorDisposable = vscode.commands.registerCommand("GitStats.viewCommitsByAuthor",() => {
+    controller.showCommitsByAuthorPanel();
+  });
+  context.subscriptions.push(viewCommitsDisposable);
+  context.subscriptions.push(viewCommitsByAuthorDisposable);
 }
 
 export function deactivate() {}

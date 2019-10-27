@@ -2,16 +2,16 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import Constants from '../../utils/constants';
 
-export default class CommitsPanel {
-  public static currentPanel: CommitsPanel | undefined;
+export default class CommitsByAuthorPanel {
+  public static currentPanel: CommitsByAuthorPanel | undefined;
 
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
 
   public static createOrShow(comitsPerAuthor: any, config: any, context:vscode.ExtensionContext) {
     const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
-    if (CommitsPanel.currentPanel) {
-      CommitsPanel.currentPanel._panel.reveal(column);
+    if (CommitsByAuthorPanel.currentPanel) {
+      CommitsByAuthorPanel.currentPanel._panel.reveal(column);
       return;
     }
 
@@ -26,7 +26,7 @@ export default class CommitsPanel {
     );
 
     const ChartJSSrc = ChartJSFilePath.with({ scheme: 'vscode-resource' });
-    CommitsPanel.currentPanel = new CommitsPanel(panel, comitsPerAuthor, config, ChartJSSrc);
+    CommitsByAuthorPanel.currentPanel = new CommitsByAuthorPanel(panel, comitsPerAuthor, config, ChartJSSrc);
   }
 
   private constructor(panel: vscode.WebviewPanel, comitsPerAuthor:any, config:any, ChartJSSrc: vscode.Uri) {
@@ -37,13 +37,13 @@ export default class CommitsPanel {
     this._panel.webview.html = webViewContent;
   }
 
-  private compileUserCommitsInfo(commit:any): string{
-    return `'${commit.author}: ${commit.totalCommits} commits - ${commit.percentageOfAllCommits}%'`;
+  private compileOccurrentInfo(stringToIncludeInApostophe:any): string{
+    return `'${stringToIncludeInApostophe}'`;
   }
 
   private getWebviewContent(comitsPerAuthor: any | [], config:any, ChartJSSrc: vscode.Uri) {
-    const labels = comitsPerAuthor.map((commit:any) => this.compileUserCommitsInfo(commit));
-    const data = (comitsPerAuthor.map((commit:any) => commit.totalCommits).toString());
+    const labels = comitsPerAuthor.map((commit:any) => this.compileOccurrentInfo(commit.label));
+    const data = (comitsPerAuthor.map((commit:any) => commit.occurrences));
     const bodyStyle = (config.width > 0 && config.height >0) ? `body { width:  ${config.width}px; height: ${config.width}px}` : '';
     return `<!DOCTYPE html>
           <html lang="en">
@@ -64,10 +64,11 @@ export default class CommitsPanel {
               <script>
                 var ctx = document.getElementById('myChart');
                 var chart = new Chart(ctx, {
-                  type: 'pie',
+                  type: 'bar',
                   data: {
                     labels: [${labels}],
                     datasets: [{
+                        label: 'Number of commits',
                         data: [${data}],
                         borderWidth: 2,
                         backgroundColor: ${Constants.colors}
@@ -78,15 +79,14 @@ export default class CommitsPanel {
                     backgroundColor: '#c1c1c1',
                     responsive: true,
                     legend: {
-                      display: ${config.showLegend},
+                      display: true,
                       position: '${config.legendPosition}',
+                      fontColor: 'rgb(255, 99, 132)'
                     }
                   }
                 });
               </script>
             </body>
-            <br />
-            <br />
             <style>
               ${bodyStyle}
               body.vscode-light .username, body.vscode-light .password {
@@ -100,7 +100,7 @@ export default class CommitsPanel {
   }
   
     public dispose() {
-      CommitsPanel.currentPanel = undefined;
+      CommitsByAuthorPanel.currentPanel = undefined;
       // Clean up our resources
       this._panel.dispose();
   
