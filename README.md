@@ -1,8 +1,12 @@
 
 
-Started as a copy of simple-git-stats https://github.com/HoangNguyen17193/vscode-simple-git-stats
+# GitGraphy
 
-Simple and efficient way to view statistics in git repository directly within Visual Studio Code.
+[![Build Status](https://dev.azure.com/pierobond/GitGraphy/_apis/build/status/marcopierobon.gitGraphy?branchName=master)](https://dev.azure.com/pierobond/GitGraphy/_build/latest?definitionId=2&branchName=master)
+
+## Description
+
+Visualize statistics of your git repository directly within Visual Studio Code.
 
 ## Main Features
 - View commits by author as a pie chart (based on [chartjs](https://www.chartjs.org/))
@@ -17,4 +21,6 @@ Command | Description
 ```Git Graphy: View Commits Per File``` | View Commit Chart per filr.
 
 ## License
+
+Started as a copy of simple-git-stats https://github.com/HoangNguyen17193/vscode-simple-git-stats
 [MIT License](LICENSE)
