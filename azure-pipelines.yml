@@ -20,6 +20,10 @@ steps:
   displayName: 'npm install'
 
 - script: |
+    npm install -g vsce
+  displayName: 'install vsce package'
+  
+- script: |
     vsce package
   displayName: 'package VS Code extension'
 
