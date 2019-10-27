@@ -2,6 +2,5 @@ out
 node_modules
 .vscode-test/
 *.vsix
-.DS_Store
 *.js
-out/*
+.DS_Store

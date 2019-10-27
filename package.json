@@ -1,9 +1,9 @@
 {
-  "name": "simple-git-stats",
-  "displayName": "Simple GIT Stats",
-  "description": "Simple and efficient way to view statistics in git repository directly within Visual Studio Code.",
-  "publisher": "Tino",
-  "version": "0.2.4",
+  "name": "git-graphy",
+  "displayName": "GIT Stats",
+  "description": "Show repo statistics directly within Visual Studio Code.",
+  "publisher": "Marco Pierobon",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.36.0"
   },
@@ -23,12 +23,12 @@
     "history"
   ],
   "repository": {
-    "url": "https://github.com/HoangNguyen17193/vscode-simple-git-stats"
+    "url": "https://github.com/marcopierobon/gitGraphy"
   },
   "activationEvents": [
     "*"
   ],
-  "homepage": "https://github.com/HoangNguyen17193/vscode-simple-git-stats",
+  "homepage": "https://github.com/marcopierobon/gitGraphy",
   "preview": false,
   "icon": "resources/logo.png",
   "license": "MIT",
@@ -36,17 +36,17 @@
   "contributes": {
     "commands": [
       {
-        "command": "GitStats.viewCommits",
-        "title": "gitGraphy: View Commits"
+        "command": "GitGraphy.viewCommits",
+        "title": "GitGraphy: View Commits"
       },
       {
-        "command": "GitStats.viewCommitsPerFile",
-        "title": "gitGraphy: View Commits per file"
+        "command": "GitGraphy.viewCommitsPerFile",
+        "title": "GitGraphy: View Commits per file"
       }
     ],
     "configuration": {
       "type": "object",
-      "title": "Simple GIT Stats",
+      "title": "GIT Stats",
       "properties": {
         "commitChart.showLegend": {
           "type": "boolean",

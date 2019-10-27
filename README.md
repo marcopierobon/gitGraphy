@@ -13,8 +13,8 @@ Open the Command Palette (Command+Shift+P on macOS and Ctrl+Shift+P on Windows/L
 
 Command | Description
 --- | ---
-```Simple Git Stats: View Commits``` | View Commit Chart by author.
-```Simple Git Stats: View Commits Per File``` | View Commit Chart per filr.
+```Git Graphy: View Commits``` | View Commit Chart by author.
+```Git Graphy: View Commits Per File``` | View Commit Chart per filr.
 
 ## License
 [MIT License](LICENSE)
