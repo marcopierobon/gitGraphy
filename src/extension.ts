@@ -6,11 +6,11 @@ export function activate(context: vscode.ExtensionContext) {
   let viewCommitsDisposable = vscode.commands.registerCommand("GitStats.viewCommits",() => {
     controller.showCommitsPanel();
   });
-  let viewCommitsByAuthorDisposable = vscode.commands.registerCommand("GitStats.viewCommitsByAuthor",() => {
-    controller.showCommitsByAuthorPanel();
+  let viewCommitsPerFileDisposable = vscode.commands.registerCommand("GitStats.viewCommitsPerFile",() => {
+    controller.showCommitsPerFilePanel();
   });
   context.subscriptions.push(viewCommitsDisposable);
-  context.subscriptions.push(viewCommitsByAuthorDisposable);
+  context.subscriptions.push(viewCommitsPerFileDisposable);
 }
 
 export function deactivate() {}

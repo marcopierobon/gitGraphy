@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import CommitsPanel from '../views/commits-panel/CommitsPanel';
-import CommitsByAuthorPanel from '../views/commits-panel/CommitsByAuthorPanel';
+import CommitsPerFilePanel from '../views/commits-panel/CommitsByAuthorPanel';
 import CommitRetrieverService from '../services/Commit';
 import ConfigurationService from '../services/Configuration';
 import OutputService from '../services/Output';
@@ -26,7 +26,7 @@ export default class {
     
   }
 
-  public async showCommitsByAuthorPanel() {
+  public async showCommitsPerFilePanel() {
     if(isBlank(vscode.workspace.rootPath)) {
       vscode.window.showInformationMessage('Please open a workspace');
       return;
@@ -34,7 +34,7 @@ export default class {
     const config = ConfigurationService.getCommitChartConfiguration();
     try {
       const comitsPerAuthor = await CommitRetrieverService.getCommitsOnAllFiles(vscode.workspace.rootPath || "");
-      CommitsByAuthorPanel.createOrShow(comitsPerAuthor, config, this.context);
+      CommitsPerFilePanel.createOrShow(comitsPerAuthor, config, this.context);
     } catch(error) {
       OutputService.printLine(error);
     }

@@ -1,11 +1,5 @@
 const  { exec } = require("child_process");
 
-// const authorEmail = '%ae';
-// const date = '%aI';
-// const body = '%b';
-// const format = {date, body, email: authorEmail};
-// const cmd = `git -C ${dir} log --pretty=format:'${JSON.stringify(format)},'`;
-
 export default class Commits {
   public static getAllPerAuthor(dir:string) {
     const cmd = `git -C ${dir} shortlog -sn -e --all`;
@@ -27,7 +21,7 @@ export default class Commits {
             repoTotalCommits += parseInt(data[0].trim());
         });
 
-        const commitsPerAuthors = lines.map((line:any) => {
+        const commitsPerFile = lines.map((line:any) => {
           const data = line.split('\t');
           return {
             totalCommits: data[0].trim(),
@@ -35,14 +29,13 @@ export default class Commits {
             percentageOfAllCommits:(data[0].trim()/repoTotalCommits * 100).toFixed(2)
           };
         });
-        return resolve(commitsPerAuthors);
+        return resolve(commitsPerFile);
       });
     });
   }
 
 
   public static getCommitsOnAllFiles(dir:string) {
-
     interface LooseObject {
         [key: string]: number
     }
@@ -91,13 +84,9 @@ export default class Commits {
             }
           });
 
-
           plotData = plotData
           .sort((n1:BubbleCharItem,n2:BubbleCharItem) => (n1.occurrences > n2.occurrences) ? -1 : 1)
           .slice(0, 9);
-
-        
-        
 
         return resolve(plotData);
       });
