@@ -1,8 +1,8 @@
 {
   "name": "git-graphy",
-  "displayName": "GIT Stats",
+  "displayName": "GIT Graphy",
   "description": "Show repo statistics directly within Visual Studio Code.",
-  "publisher": "Marco Pierobon",
+  "publisher": "marco-pierobon",
   "version": "1.0.0",
   "engines": {
     "vscode": "^1.36.0"
