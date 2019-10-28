@@ -2,7 +2,7 @@ const  { exec } = require("child_process");
 
 export default class CommitsRetriever {
   public static getAllPerAuthor(dir:string) {
-    const cmd = `git -C ${dir} shortlog -sn -e --all`;
+    const cmd = `git -C "${dir}" shortlog -sn -e --all`;
     return new Promise((resolve, reject) => {
       exec(cmd, { maxBuffer: 1024 * 50 * 1000 },  (err: any, stdout: any, stderr: any) => {
         if (err) {
@@ -45,7 +45,7 @@ export default class CommitsRetriever {
       occurrences: number;
   }
 
-    const cmd = `cd ${dir} && git log --oneline --pretty="format:" --name-only`;
+    const cmd = `cd "${dir}" && git log --oneline --pretty="format:" --name-only`;
     return new Promise((resolve, reject) => {
       exec(cmd, { maxBuffer: 1024 * 50 * 1000 },  (err: any, stdout: any, stderr: any) => {
         if (err) {

@@ -23,4 +23,5 @@ Command | Description
 ## License
 
 Started as a copy of simple-git-stats https://github.com/HoangNguyen17193/vscode-simple-git-stats
+
 [MIT License](LICENSE)
