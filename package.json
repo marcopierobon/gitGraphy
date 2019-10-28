@@ -78,11 +78,8 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.20",
     "@types/mocha": "^2.2.42",
     "@types/node": "^10.14.22",
-    "jest": "^24.9.0",
-    "ts-jest": "^24.1.0",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1",
     "vscode": "^1.1.28"
