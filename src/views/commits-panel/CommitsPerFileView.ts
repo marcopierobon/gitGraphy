@@ -44,7 +44,11 @@ export default class CommitsPerFilePanel {
   private getWebviewContent(comitsPerFile: any | [], config:any, ChartJSSrc: vscode.Uri) {
     const labels = comitsPerFile.map((commit:any) => this.compileOccurrentInfo(commit.label));
     const data = (comitsPerFile.map((commit:any) => commit.occurrences));
-    const bodyStyle = (config.width > 0 && config.height >0) ? `body { width:  ${config.width}px; height: ${config.width}px}` : '';
+    const bodyStyle = (config.width > 0 && config.height >0) ? `body { 
+      width:  ${config.width}px; 
+      height: ${config.width}px}; 
+      margin-top: s70px; 
+      margin-left: 70px;` : '';
     return `<!DOCTYPE html>
           <html lang="en">
             <head>
@@ -87,6 +91,7 @@ export default class CommitsPerFilePanel {
                 });
               </script>
             </body>
+            <br><br>
             <style>
               ${bodyStyle}
               body.vscode-light .username, body.vscode-light .password {

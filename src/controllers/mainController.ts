@@ -4,6 +4,7 @@ import CommitsPerFilePanel from '../views/commits-panel/CommitsPerFileView';
 import CommitRetrieverService from '../services/CommitsRetriever';
 import ConfigurationService from '../services/ConfigurationRetriever';
 import MessagePrinter from '../services/MessagePrinter';
+import WorkspaceDeterminer from '../services/WorkspaceDeterminer';
 import { isBlank } from '../utils';
 
 export default class {
@@ -12,13 +13,11 @@ export default class {
     this.context = context;
   }
   public async showCommitsPanel() {
-    if(isBlank(vscode.workspace.rootPath)) {
-      vscode.window.showInformationMessage('Please open a workspace');
-      return;
-    }
+    var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
+
     const config = ConfigurationService.getCommitChartConfiguration();
     try {
-      const comitsPerAuthor = await CommitRetrieverService.getAllPerAuthor(vscode.workspace.rootPath || "");
+      const comitsPerAuthor = await CommitRetrieverService.getAllPerAuthor(selectedWorkspace || "");
       CommitsPanel.createOrShow(comitsPerAuthor, config, this.context);
     } catch(error) {
       MessagePrinter.printLine(error);
@@ -26,17 +25,14 @@ export default class {
   }
 
   public async showCommitsPerFilePanel() {
-    if(isBlank(vscode.workspace.rootPath)) {
-      vscode.window.showInformationMessage('Please open a workspace');
-      return;
-    }
+    
+    var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
     const config = ConfigurationService.getCommitChartConfiguration();
     try {
-      const comitsPerAuthor = await CommitRetrieverService.getCommitsOnAllFiles(vscode.workspace.rootPath || "");
+      const comitsPerAuthor = await CommitRetrieverService.getCommitsOnAllFiles(selectedWorkspace || "");
       CommitsPerFilePanel.createOrShow(comitsPerAuthor, config, this.context);
     } catch(error) {
       MessagePrinter.printLine(error);
     }
-    
   }
 }

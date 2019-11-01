@@ -1,3 +1,6 @@
+## 1.0.2 (01 Nov 2019)
+* Support for multiple namespaces: when that is the case, the namespace for the current open file is taken.
+
 ## 1.0.1 (28 Oct 2019)
 * Fixed issue https://github.com/marcopierobon/gitGraphy/issues/4 : Cannot run on git repos whose path contains spaces
 * Set up jest for unit testing
