@@ -1,3 +1,7 @@
+## 1.0.6 (26 Apr 2020)
+* Added function to show the largest files in the repo.
+* Improved visualisation for the commits per file command.
+
 ## 1.0.2 (01 Nov 2019)
 * Support for multiple namespaces: when that is the case, the namespace for the current open file is taken.
 
