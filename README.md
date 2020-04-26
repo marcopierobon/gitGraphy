@@ -19,7 +19,7 @@ Command | Description
 --- | ---
 ```Git Graphy: View Commits``` | View Commit Chart by author.
 ```Git Graphy: View Commits Per File``` | View Commit Chart per file.
-```Git Graphy: GitGraphy: View Largest files``` | Show the largest files in the repisitory (working in * nix and OSX systems).
+```Git Graphy: GitGraphy: View Largest files``` | Show the largest files in the repository (working in * nix and OSX systems).
 
 ## License
 
