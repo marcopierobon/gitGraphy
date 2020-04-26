@@ -3,6 +3,7 @@ import * as path from "path";
 import Constants from "../../utils/constants";
 
 export default class SizePerFilePanel {
+  private static _fileSizeMultiplier = 1024;
   public static currentPanel: SizePerFilePanel | undefined;
 
   private readonly _panel: vscode.WebviewPanel;
@@ -62,30 +63,68 @@ export default class SizePerFilePanel {
 
   scaleDataAndRemoveSizeFormatter(data: any): [number[], string] {
     var sizeMultipliers = [
-      { name: "b", value: 1 },
-      { name: "k", value: 1024 },
-      { name: "m", value: 1024 },
-      { name: "g", value: 1024 },
+      { name: "b"},
+      { name: "k" },
+      { name: "m" },
+      { name: "g" },
     ];
 
-    if (data == null || data.length == 0) return [[], ""];
-    var firstElementSizeSpecifier = data[0][data[0].length - 1].toLowerCase();
-    var lastElementSizeSpecifier = data[data.length - 1][
+    if (
+      data == null ||
+      data.length == 0 ||
+      data[0] == null ||
+      data[data.length - 1] == null
+    )
+      return [[], ""];
+    var smallestElementSizeSpecifier = data[0][
       data[0].length - 1
     ].toLowerCase();
+    var biggestElementSizeSpecifier = data[data.length - 1][
+      data[data.length - 1].length - 1
+    ].toLowerCase();
 
-    var regExForDataSizeNonSensitive = new RegExp(
-      lastElementSizeSpecifier,
-      "ig"
+    var firstElementSizeSpecifierIndex = sizeMultipliers.findIndex(
+      (sizeMultiplier) => {
+        return sizeMultiplier.name == smallestElementSizeSpecifier;
+      }
     );
-    if (firstElementSizeSpecifier === lastElementSizeSpecifier) {
+
+    if (smallestElementSizeSpecifier === biggestElementSizeSpecifier) {
+      var regExForDataSizeNonSensitive = new RegExp(
+        biggestElementSizeSpecifier,
+        "ig"
+      );
       var dataAlreadyScaledToTheSameUnit = data.map((currentFileSize: any) =>
         Number(currentFileSize.replace(regExForDataSizeNonSensitive, ""))
       );
-      return [dataAlreadyScaledToTheSameUnit, lastElementSizeSpecifier];
+      return [dataAlreadyScaledToTheSameUnit, smallestElementSizeSpecifier];
     } else {
-      //TODO: handle cases where the returned files have different unit sizes (gb vs kb vb b)
-      return [[], ""];
+      var dataScaledToTheSameUnit = data.map((currentFileSize: any) => {
+        var currentFileSizeSpecifier = currentFileSize[
+          currentFileSize.length - 1
+        ].toLowerCase();
+        var currentFileSizeSpecifierIndex = sizeMultipliers.findIndex(
+          (sizeMultiplier) => {
+            return sizeMultiplier.name == currentFileSizeSpecifier;
+          }
+        );
+        var specifierMultiplier =
+          currentFileSizeSpecifierIndex - firstElementSizeSpecifierIndex;
+
+        var regExForCurrentSizeNonSensitive = new RegExp(
+          currentFileSizeSpecifier,
+          "ig"
+        );
+        var currentFileSizeWithoutSizeSpecifier = Number(
+          currentFileSize.replace(regExForCurrentSizeNonSensitive, "")
+        );
+        return (
+          currentFileSizeWithoutSizeSpecifier *
+          Math.pow(SizePerFilePanel._fileSizeMultiplier, specifierMultiplier + 1)
+        );
+      });
+
+      return [dataScaledToTheSameUnit, smallestElementSizeSpecifier];
     }
   }
 
@@ -115,8 +154,8 @@ export default class SizePerFilePanel {
         ? `body { 
       width:  ${config.width}px; 
       height: ${config.height}px}; 
-      margin-top: s70px; 
-      margin-left: 70px;`
+      margin-top: 150px; 
+      margin-left: 150px;`
         : "";
     return `<!DOCTYPE html>
           <html lang="en">
@@ -148,6 +187,39 @@ export default class SizePerFilePanel {
                     }]
                   },
                   options: {
+                    scales: {
+                      xAxes: [{
+                        ticks: {
+                          callback: function(value) {
+                            var valueToTruncate = value;
+                            if (value.indexOf("/") >= 0) {
+                              valueToTruncate = 
+                                value.substring(value.lastIndexOf("/") + 1, value.length);
+                            } 
+                            if(valueToTruncate.length > 10) {
+                              var valueBeforeDots = valueToTruncate.substring(0, 4);
+                              var valueAfterDots = valueToTruncate.substring(valueToTruncate.length - 1 - 3, valueToTruncate.length);
+                              valueToTruncate =  valueBeforeDots + "..." + valueAfterDots;
+                            }
+                            return valueToTruncate;
+                          },
+                        }
+                      }],
+                      yAxes: [{}]
+                    },
+                    tooltips: {
+                      enabled: true,
+                      mode: 'label',
+                      callbacks: {
+                        title: function(tooltipItems, data) {
+                          var idx = tooltipItems[0].index;
+                          return data.labels[idx]; 
+                        },
+                        label: function(tooltipItems, data) {
+                          return tooltipItems.xLabel;
+                        }
+                      }
+                    },
                     maintainAspectRatio: true,
                     backgroundColor: '#c1c1c1',
                     responsive: true,
@@ -169,7 +241,11 @@ export default class SizePerFilePanel {
                                     var fill = custom.backgroundColor ? custom.backgroundColor : getValueAtIndexOrDefault(ds.backgroundColor, i, arcOpts.backgroundColor);
                                     var stroke = custom.borderColor ? custom.borderColor : getValueAtIndexOrDefault(ds.borderColor, i, arcOpts.borderColor);
                                     var bw = custom.borderWidth ? custom.borderWidth : getValueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
-        
+
+                                    if (label.indexOf("/") >= 0) {
+                                      label = 
+                                        label.substring(label.lastIndexOf("/") + 1, label.length);
+                                    } 
         
                                     return {
                                         // We add the value to the string
