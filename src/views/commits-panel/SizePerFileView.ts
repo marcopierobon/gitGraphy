@@ -215,8 +215,8 @@ export default class SizePerFilePanel {
                           var idx = tooltipItems[0].index;
                           return data.labels[idx]; 
                         },
-                        label: function(tooltipItems, data) {
-                          return tooltipItems.xLabel;
+                        label: function(tooltipItem, data) {
+                          return data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' ${dataToBeVisualized[1]}b';
                         }
                       }
                     },

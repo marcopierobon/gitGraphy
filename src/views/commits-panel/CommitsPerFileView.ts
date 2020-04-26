@@ -112,6 +112,39 @@ export default class CommitsPerFilePanel {
                     }]
                   },
                   options: {
+                    scales: {
+                      xAxes: [{
+                        ticks: {
+                          callback: function(value) {
+                            var valueToTruncate = value;
+                            if (value.indexOf("/") >= 0) {
+                              valueToTruncate = 
+                                value.substring(value.lastIndexOf("/") + 1, value.length);
+                            } 
+                            if(valueToTruncate.length > 10) {
+                              var valueBeforeDots = valueToTruncate.substring(0, 4);
+                              var valueAfterDots = valueToTruncate.substring(valueToTruncate.length - 1 - 3, valueToTruncate.length);
+                              valueToTruncate =  valueBeforeDots + "..." + valueAfterDots;
+                            }
+                            return valueToTruncate;
+                          },
+                        }
+                      }],
+                      yAxes: [{}]
+                    },
+                    tooltips: {
+                      enabled: true,
+                      mode: 'label',
+                      callbacks: {
+                        title: function(tooltipItems, data) {
+                          var idx = tooltipItems[0].index;
+                          return data.labels[idx]; 
+                        },
+                        label: function(tooltipItem, data) {
+                          return data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' commits';
+                        }
+                      }
+                    },
                     maintainAspectRatio: true,
                     backgroundColor: '#c1c1c1',
                     responsive: true,
