@@ -8,7 +8,7 @@ export default class CommitsPanel {
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(comitsPerAuthor: any, config: any, context:vscode.ExtensionContext) {
+  public static createOrShow(commitsPerAuthor: any, config: any, context:vscode.ExtensionContext) {
     const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
     if (CommitsPanel.currentPanel) {
       CommitsPanel.currentPanel._panel.reveal(column);
@@ -26,14 +26,14 @@ export default class CommitsPanel {
     );
 
     const ChartJSSrc = ChartJSFilePath.with({ scheme: 'vscode-resource' });
-    CommitsPanel.currentPanel = new CommitsPanel(panel, comitsPerAuthor, config, ChartJSSrc);
+    CommitsPanel.currentPanel = new CommitsPanel(panel, commitsPerAuthor, config, ChartJSSrc);
   }
 
-  private constructor(panel: vscode.WebviewPanel, comitsPerAuthor:any, config:any, ChartJSSrc: vscode.Uri) {
+  private constructor(panel: vscode.WebviewPanel, commitsPerAuthor:any, config:any, ChartJSSrc: vscode.Uri) {
     this._panel = panel;
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
     this._panel = panel;
-    const webViewContent = this.getWebviewContent(comitsPerAuthor, config, ChartJSSrc);
+    const webViewContent = this.getWebviewContent(commitsPerAuthor, config, ChartJSSrc);
     this._panel.webview.html = webViewContent;
   }
 
@@ -41,10 +41,10 @@ export default class CommitsPanel {
     return `'${commit.author}: ${commit.totalCommits} commits - ${commit.percentageOfAllCommits}%'`;
   }
 
-  private getWebviewContent(comitsPerAuthor: any | [], config:any, ChartJSSrc: vscode.Uri) {
-    const labels = comitsPerAuthor.map((commit:any) => this.compileUserCommitsInfo(commit));
-    const data = (comitsPerAuthor.map((commit:any) => commit.totalCommits).toString());
-    const bodyStyle = (config.width > 0 && config.height >0) ? `body { width:  ${config.width}px; height: ${config.width}px}` : '';
+  private getWebviewContent(commitsPerAuthor: any | [], config:any, ChartJSSrc: vscode.Uri) {
+    const labels = commitsPerAuthor.map((commit:any) => this.compileUserCommitsInfo(commit));
+    const data = (commitsPerAuthor.map((commit:any) => commit.totalCommits).toString());
+    const bodyStyle = (config.width > 0 && config.height >0) ? `body { width:  ${config.width}px; height: ${config.height}px}` : '';
     return `<!DOCTYPE html>
           <html lang="en">
             <head>

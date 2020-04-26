@@ -3,7 +3,7 @@
   "displayName": "GIT Graphy",
   "description": "Show repo statistics directly within Visual Studio Code.",
   "publisher": "marco-pierobon",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "engines": {
     "vscode": "^1.36.0"
   },
@@ -18,9 +18,11 @@
     "commit",
     "chart",
     "analytics",
-    "git stats",
+    "git graphy",
     "log",
-    "history"
+    "history",
+    "improvement",
+    "insights"
   ],
   "repository": {
     "url": "https://github.com/marcopierobon/gitGraphy"
@@ -42,11 +44,15 @@
       {
         "command": "GitGraphy.viewCommitsPerFile",
         "title": "GitGraphy: View Commits per file"
+      },
+      {
+        "command": "GitGraphy.viewSizePerFile",
+        "title": "GitGraphy: View Largest files"
       }
     ],
     "configuration": {
       "type": "object",
-      "title": "GIT Stats",
+      "title": "GIT Graphy",
       "properties": {
         "commitChart.showLegend": {
           "type": "boolean",

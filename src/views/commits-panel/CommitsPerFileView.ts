@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import Constants from '../../utils/constants';
+import * as vscode from "vscode";
+import * as path from "path";
+import Constants from "../../utils/constants";
 
 export default class CommitsPerFilePanel {
   public static currentPanel: CommitsPerFilePanel | undefined;
@@ -8,47 +8,80 @@ export default class CommitsPerFilePanel {
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(comitsPerFile: any, config: any, context:vscode.ExtensionContext) {
-    const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
+  public static createOrShow(
+    commitsPerFile: any,
+    config: any,
+    context: vscode.ExtensionContext
+  ) {
+    const column = vscode.window.activeTextEditor
+      ? vscode.window.activeTextEditor.viewColumn
+      : undefined;
     if (CommitsPerFilePanel.currentPanel) {
       CommitsPerFilePanel.currentPanel._panel.reveal(column);
       return;
     }
 
-    const panel = vscode.window.createWebviewPanel("CommitsPanel", "View Commits Per File", column || vscode.ViewColumn.One,
+    const panel = vscode.window.createWebviewPanel(
+      "CommitsPanel",
+      "View Commits Per File",
+      column || vscode.ViewColumn.One,
       {
-        enableScripts: true
+        enableScripts: true,
       }
     );
 
     const ChartJSFilePath = vscode.Uri.file(
-      path.join(context.extensionPath, 'resources', 'Chart.bundle.min.js')
+      path.join(context.extensionPath, "resources", "Chart.bundle.min.js")
     );
 
-    const ChartJSSrc = ChartJSFilePath.with({ scheme: 'vscode-resource' });
-    CommitsPerFilePanel.currentPanel = new CommitsPerFilePanel(panel, comitsPerFile, config, ChartJSSrc);
+    const ChartJSSrc = ChartJSFilePath.with({ scheme: "vscode-resource" });
+    CommitsPerFilePanel.currentPanel = new CommitsPerFilePanel(
+      panel,
+      commitsPerFile,
+      config,
+      ChartJSSrc
+    );
   }
 
-  private constructor(panel: vscode.WebviewPanel, comitsPerFile:any, config:any, ChartJSSrc: vscode.Uri) {
+  private constructor(
+    panel: vscode.WebviewPanel,
+    commitsPerFile: any,
+    config: any,
+    ChartJSSrc: vscode.Uri
+  ) {
     this._panel = panel;
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
     this._panel = panel;
-    const webViewContent = this.getWebviewContent(comitsPerFile, config, ChartJSSrc);
+    const webViewContent = this.getWebviewContent(
+      commitsPerFile,
+      config,
+      ChartJSSrc
+    );
     this._panel.webview.html = webViewContent;
   }
 
-  private compileOccurrentInfo(stringToIncludeInApostophe:any): string{
+  private compileOccurrentInfo(stringToIncludeInApostophe: any): string {
     return `'${stringToIncludeInApostophe}'`;
   }
 
-  private getWebviewContent(comitsPerFile: any | [], config:any, ChartJSSrc: vscode.Uri) {
-    const labels = comitsPerFile.map((commit:any) => this.compileOccurrentInfo(commit.label));
-    const data = (comitsPerFile.map((commit:any) => commit.occurrences));
-    const bodyStyle = (config.width > 0 && config.height >0) ? `body { 
+  private getWebviewContent(
+    commitsPerFile: any | [],
+    config: any,
+    ChartJSSrc: vscode.Uri
+  ) {
+    const labels = commitsPerFile.map((commit: any) =>
+      this.compileOccurrentInfo(commit.label)
+    );
+    const data = commitsPerFile.map((commit: any) => commit.occurrences);
+
+    const bodyStyle =
+      config.width > 0 && config.height > 0
+        ? `body { 
       width:  ${config.width}px; 
-      height: ${config.width}px}; 
+      height: ${config.height}px}; 
       margin-top: s70px; 
-      margin-left: 70px;` : '';
+      margin-left: 70px;`
+        : "";
     return `<!DOCTYPE html>
           <html lang="en">
             <head>
@@ -103,17 +136,17 @@ export default class CommitsPerFilePanel {
             </style>
           </html>`;
   }
-  
-    public dispose() {
-      CommitsPerFilePanel.currentPanel = undefined;
-      // Clean up our resources
-      this._panel.dispose();
-  
-      while (this._disposables.length) {
-        const panel = this._disposables.pop();
-        if (panel) {
-          panel.dispose();
-        }
+
+  public dispose() {
+    CommitsPerFilePanel.currentPanel = undefined;
+    // Clean up our resources
+    this._panel.dispose();
+
+    while (this._disposables.length) {
+      const panel = this._disposables.pop();
+      if (panel) {
+        panel.dispose();
       }
     }
+  }
 }
