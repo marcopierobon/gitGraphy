@@ -94,7 +94,7 @@ export default class SizePerFilePanel {
             }
             break;
           default:
-            throw (
+            throw new Error (
               "The message of type " + message.command + " was not expected"
             );
         }
@@ -119,12 +119,13 @@ export default class SizePerFilePanel {
     ];
     let scaleDifferenceBetweenSmallestAndBiggestFileSizes = 0;
     if (
-      data == null ||
-      data.length == 0 ||
-      data[0] == null ||
-      data[data.length - 1] == null
-    )
+      data === null ||
+      data.length === 0 ||
+      data[0] === null ||
+      data[data.length - 1] === null
+    ){
       return [[], "", scaleDifferenceBetweenSmallestAndBiggestFileSizes];
+    }
     var biggestElementSizeSpecifier = data[0][
       data[0].length - 1
     ].toLowerCase();
@@ -134,7 +135,7 @@ export default class SizePerFilePanel {
 
     var firstElementSizeSpecifierIndex = sizeMultipliers.findIndex(
       (sizeMultiplier) => {
-        return sizeMultiplier.name == smallestElementSizeSpecifier;
+        return sizeMultiplier.name === smallestElementSizeSpecifier;
       }
     );
 
@@ -158,7 +159,7 @@ export default class SizePerFilePanel {
         ].toLowerCase();
         var currentFileSizeSpecifierIndex = sizeMultipliers.findIndex(
           (sizeMultiplier) => {
-            return sizeMultiplier.name == currentFileSizeSpecifier;
+            return sizeMultiplier.name === currentFileSizeSpecifier;
           }
         );
         var specifierMultiplier =

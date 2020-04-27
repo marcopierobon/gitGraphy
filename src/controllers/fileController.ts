@@ -3,7 +3,7 @@ import FilesSizeRetriever from '../services/FilesSizeRetriever';
 import ConfigurationService from '../services/ConfigurationRetriever';
 import MessagePrinter from '../services/MessagePrinter';
 import WorkspaceDeterminer from '../services/WorkspaceDeterminer';
-import SizePerFilePanel from '../views/commits-panel/SizePerFileView';
+import SizePerFilePanel from '../views/files-sizes-panel/SizePerFileView';
 
 export default class {
   context:vscode.ExtensionContext;
