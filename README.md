@@ -25,7 +25,7 @@ Command | Description
 
 ### Git Graphy: View Largest files on the EF core repo
 
-![Big files output](design/bigFiles.jpeg)
+![Big files output](design/bigFiles.gif)
 
 ### Git Graphy: View Commits Per File on the EF core repo
 

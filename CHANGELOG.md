@@ -1,3 +1,11 @@
+## 1.0.8 (27 Apr 2020)
+* Allow to iterate through the large files in the the large file command view.
+* Improved visualisation for the large file view:
+    1. Scale the y-axis to eb slightly over the highest value being displayed (1.1 times) and rounded to the closest multiple of ten
+    2. Display the y-axis indicators on a basis equal to a tenth of the highest value for the axis (if the max value is 1400, it will show 140 increments)
+    3. Display large files in an ascending order - left to right
+    4. Display the unit close to the values on the y-axis
+
 ## 1.0.6 (26 Apr 2020)
 * Added function to show the largest files in the repo.
 * Improved visualisation for the commits per file command.
