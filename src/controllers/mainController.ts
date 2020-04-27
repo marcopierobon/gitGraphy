@@ -45,11 +45,13 @@ export default class {
 
         vscode.window.showInformationMessage(unsupportedHostOSMessage);
         MessagePrinter.printLine(unsupportedHostOSMessage);
+        return;
     }
     var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
     const config = ConfigurationService.getCommitChartConfiguration();
+    var skipNumberOfFiles = 0;
     try {
-      const commitsPerAuthor = await FilesSizeRetriever.getSizesFiles(selectedWorkspace || "");
+      const commitsPerAuthor = await FilesSizeRetriever.getSizesFiles(selectedWorkspace || "", skipNumberOfFiles);
       SizePerFilePanel.createOrShow(commitsPerAuthor, config, this.context);
     } catch(error) {
       MessagePrinter.printLine(error);

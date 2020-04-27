@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import Constants from "../../utils/constants";
+import MessagePrinter from "../../services/MessagePrinter";
+import FilesSizeRetriever from "../../services/FilesSizeRetriever";
+import WorkspaceDeterminer from "../../services/WorkspaceDeterminer";
 
 export default class SizePerFilePanel {
   private static _fileSizeMultiplier = 1024;
@@ -8,6 +11,7 @@ export default class SizePerFilePanel {
 
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
+  private static currentFilesBeingSkipped = 0;
 
   public static createOrShow(
     commitsPerFile: any,
@@ -52,34 +56,76 @@ export default class SizePerFilePanel {
   ) {
     this._panel = panel;
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-    this._panel = panel;
     const webViewContent = this.getWebviewContent(
       commitsPerFile,
       config,
       ChartJSSrc
     );
     this._panel.webview.html = webViewContent;
+
+    this._panel.webview.onDidReceiveMessage(
+      async (message) => {
+        let filesWithSizes: [string] | undefined = undefined;
+        var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
+        switch (message.command) {
+          case "Previous":
+            SizePerFilePanel.currentFilesBeingSkipped += 10;
+            filesWithSizes = await FilesSizeRetriever.getSizesFiles(
+              selectedWorkspace || "",
+              SizePerFilePanel.currentFilesBeingSkipped
+            );
+            MessagePrinter.printLine("Previous files shown");
+            break;
+          case "Next":
+            if (SizePerFilePanel.currentFilesBeingSkipped >= 10) {
+              SizePerFilePanel.currentFilesBeingSkipped -= 10;
+              filesWithSizes = await FilesSizeRetriever.getSizesFiles(
+                selectedWorkspace || "",
+                SizePerFilePanel.currentFilesBeingSkipped
+              );
+            } else {
+              vscode.window.showInformationMessage(
+                "You are already seeing the biggest files in the repository. " +
+                  SizePerFilePanel.currentFilesBeingSkipped
+              );
+            }
+            break;
+          default:
+            throw (
+              "The message of type " + message.command + " was not expected"
+            );
+        }
+        const webViewContent = this.getWebviewContent(
+          filesWithSizes,
+          config,
+          ChartJSSrc
+        );
+        this._panel.webview.html = webViewContent;
+      },
+      undefined,
+      undefined
+    );
   }
 
-  scaleDataAndRemoveSizeFormatter(data: any): [number[], string] {
+  scaleDataAndRemoveSizeFormatter(data: any): [number[], string, number] {
     var sizeMultipliers = [
-      { name: "b"},
+      { name: "b" },
       { name: "k" },
       { name: "m" },
       { name: "g" },
     ];
-
+    let scaleDifferenceBetweenSmallestAndBiggestFileSizes = 0;
     if (
       data == null ||
       data.length == 0 ||
       data[0] == null ||
       data[data.length - 1] == null
     )
-      return [[], ""];
-    var smallestElementSizeSpecifier = data[0][
+      return [[], "", scaleDifferenceBetweenSmallestAndBiggestFileSizes];
+    var biggestElementSizeSpecifier = data[0][
       data[0].length - 1
     ].toLowerCase();
-    var biggestElementSizeSpecifier = data[data.length - 1][
+    var smallestElementSizeSpecifier = data[data.length - 1][
       data[data.length - 1].length - 1
     ].toLowerCase();
 
@@ -97,7 +143,11 @@ export default class SizePerFilePanel {
       var dataAlreadyScaledToTheSameUnit = data.map((currentFileSize: any) =>
         Number(currentFileSize.replace(regExForDataSizeNonSensitive, ""))
       );
-      return [dataAlreadyScaledToTheSameUnit, smallestElementSizeSpecifier];
+      return [
+        dataAlreadyScaledToTheSameUnit.reverse(),
+        smallestElementSizeSpecifier,
+        scaleDifferenceBetweenSmallestAndBiggestFileSizes,
+      ];
     } else {
       var dataScaledToTheSameUnit = data.map((currentFileSize: any) => {
         var currentFileSizeSpecifier = currentFileSize[
@@ -118,13 +168,26 @@ export default class SizePerFilePanel {
         var currentFileSizeWithoutSizeSpecifier = Number(
           currentFileSize.replace(regExForCurrentSizeNonSensitive, "")
         );
+        if (
+          specifierMultiplier >
+          scaleDifferenceBetweenSmallestAndBiggestFileSizes
+        ) {
+          scaleDifferenceBetweenSmallestAndBiggestFileSizes = specifierMultiplier;
+        }
         return (
           currentFileSizeWithoutSizeSpecifier *
-          Math.pow(SizePerFilePanel._fileSizeMultiplier, specifierMultiplier + 1)
+          Math.pow(
+            SizePerFilePanel._fileSizeMultiplier,
+            specifierMultiplier + 1
+          )
         );
       });
 
-      return [dataScaledToTheSameUnit, smallestElementSizeSpecifier];
+      return [
+        dataScaledToTheSameUnit.reverse(),
+        smallestElementSizeSpecifier,
+        scaleDifferenceBetweenSmallestAndBiggestFileSizes,
+      ];
     }
   }
 
@@ -142,12 +205,19 @@ export default class SizePerFilePanel {
     );
     let dataToBeVisualized: [
       number[],
-      string
+      string,
+      number
     ] = this.scaleDataAndRemoveSizeFormatter(
       fileNameAndSizePairs.map(
         (fileNameAndSize: any) => fileNameAndSize.fileSize
       )
     );
+    let maxGraphValue =
+      Math.ceil(
+        (dataToBeVisualized[0][dataToBeVisualized[0].length - 1] * 1.1) / 10
+      ) * 10;
+
+    let stepSize = Math.floor(maxGraphValue / 10);
 
     const bodyStyle =
       config.width > 0 && config.height > 0
@@ -165,6 +235,11 @@ export default class SizePerFilePanel {
                 <title>Signin</title>
             </head>
             <body>
+            <br/>
+            <div align="center">
+              <button onclick="showPrevious()">Display smaller files</button>
+              <button onclick="showNext()">Display bigger files</button>
+            </div>
               <canvas id="myChart"></canvas>
               <script src="${ChartJSSrc}"></script>
               <script>
@@ -197,15 +272,25 @@ export default class SizePerFilePanel {
                                 value.substring(value.lastIndexOf("/") + 1, value.length);
                             } 
                             if(valueToTruncate.length > 10) {
-                              var valueBeforeDots = valueToTruncate.substring(0, 4);
+                              var valueBeforeDots = valueToTruncate.substring(0, 5);
                               var valueAfterDots = valueToTruncate.substring(valueToTruncate.length - 1 - 3, valueToTruncate.length);
-                              valueToTruncate =  valueBeforeDots + "..." + valueAfterDots;
+                              valueToTruncate =  valueBeforeDots + ".." + valueAfterDots;
                             }
                             return valueToTruncate;
                           },
                         }
                       }],
-                      yAxes: [{}]
+                      yAxes: [{
+                        ticks: {
+                          beginAtZero: true,
+                          min: 0,
+                          max: ${maxGraphValue},
+                          stepSize: ${stepSize},
+                          callback: function(value, index, values) {
+                              return value +  ' ${dataToBeVisualized[1]}b'
+                          }
+                        }
+                      }]
                     },
                     tooltips: {
                       enabled: true,
@@ -249,7 +334,7 @@ export default class SizePerFilePanel {
         
                                     return {
                                         // We add the value to the string
-                                        text: label +  ' (${dataToBeVisualized[1]}b)',
+                                        text: label,
                                         fillStyle: fill,
                                         strokeStyle: stroke,
                                         lineWidth: bw,
@@ -265,6 +350,12 @@ export default class SizePerFilePanel {
                     }
                   }
                 });
+                function showPrevious(){
+                  vscode.postMessage({command: 'Previous'})
+                }
+                function showNext(){
+                  vscode.postMessage({command: 'Next'})
+                }
               </script>
             </body>
             <br><br>
