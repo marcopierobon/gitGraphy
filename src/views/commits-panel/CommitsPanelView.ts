@@ -8,7 +8,7 @@ export default class CommitsPanel {
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(commitsPerAuthor: any, config: any, context:vscode.ExtensionContext) {
+  public static createOrShow(commitsPerAuthor: CommitsPerAuthor[], config: GraphConfig , context:vscode.ExtensionContext) {
     const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
     if (CommitsPanel.currentPanel) {
       CommitsPanel.currentPanel._panel.reveal(column);

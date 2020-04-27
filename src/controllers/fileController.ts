@@ -7,8 +7,10 @@ import SizePerFilePanel from '../views/commits-panel/SizePerFileView';
 
 export default class {
   context:vscode.ExtensionContext;
+  _config: GraphConfig;
   constructor (context:vscode.ExtensionContext) {
     this.context = context;
+    this.context = context;this._config = ConfigurationService.getCommitChartConfiguration();
   }
 
   public async showSizesPerFilePanel(isHostAUnixBasedSystem : boolean| undefined) {
@@ -22,11 +24,10 @@ export default class {
         return;
     }
     var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
-    const config = ConfigurationService.getCommitChartConfiguration();
     var skipNumberOfFiles = 0;
     try {
-      const commitsPerAuthor = await FilesSizeRetriever.getSizesFiles(selectedWorkspace || "", skipNumberOfFiles);
-      SizePerFilePanel.createOrShow(commitsPerAuthor, config, this.context);
+      const filesWithSize = await FilesSizeRetriever.getFilesSizes(selectedWorkspace || "", skipNumberOfFiles);
+      SizePerFilePanel.createOrShow(filesWithSize, this._config, this.context);
     } catch(error) {
       MessagePrinter.printLine(error);
     }

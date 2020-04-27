@@ -4,6 +4,7 @@ import Constants from "../../utils/constants";
 import MessagePrinter from "../../services/MessagePrinter";
 import FilesSizeRetriever from "../../services/FilesSizeRetriever";
 import WorkspaceDeterminer from "../../services/WorkspaceDeterminer";
+import ButtonActions from "../../models/commands/ButtonActions";
 
 export default class SizePerFilePanel {
   private static _fileSizeMultiplier = 1024;
@@ -12,10 +13,11 @@ export default class SizePerFilePanel {
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
   private static currentFilesBeingSkipped = 0;
+  private static yAxisIntervalsScale = 10;
 
   public static createOrShow(
-    commitsPerFile: any,
-    config: any,
+    commitsPerFile: [string],
+    config: GraphConfig,
     context: vscode.ExtensionContext
   ) {
     const column = vscode.window.activeTextEditor
@@ -50,8 +52,8 @@ export default class SizePerFilePanel {
 
   private constructor(
     panel: vscode.WebviewPanel,
-    commitsPerFile: any,
-    config: any,
+    commitsPerFile: [string],
+    config: GraphConfig,
     ChartJSSrc: vscode.Uri
   ) {
     this._panel = panel;
@@ -67,19 +69,20 @@ export default class SizePerFilePanel {
       async (message) => {
         let filesWithSizes: [string] | undefined = undefined;
         var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
+
         switch (message.command) {
-          case "Previous":
+          case ButtonActions.Previous:
             SizePerFilePanel.currentFilesBeingSkipped += 10;
-            filesWithSizes = await FilesSizeRetriever.getSizesFiles(
+            filesWithSizes = await FilesSizeRetriever.getFilesSizes(
               selectedWorkspace || "",
               SizePerFilePanel.currentFilesBeingSkipped
             );
             MessagePrinter.printLine("Previous files shown");
             break;
-          case "Next":
+          case ButtonActions.Next:
             if (SizePerFilePanel.currentFilesBeingSkipped >= 10) {
               SizePerFilePanel.currentFilesBeingSkipped -= 10;
-              filesWithSizes = await FilesSizeRetriever.getSizesFiles(
+              filesWithSizes = await FilesSizeRetriever.getFilesSizes(
                 selectedWorkspace || "",
                 SizePerFilePanel.currentFilesBeingSkipped
               );
@@ -214,10 +217,9 @@ export default class SizePerFilePanel {
     );
     let maxGraphValue =
       Math.ceil(
-        (dataToBeVisualized[0][dataToBeVisualized[0].length - 1] * 1.1) / 10
-      ) * 10;
-
-    let stepSize = Math.floor(maxGraphValue / 10);
+        (dataToBeVisualized[0][dataToBeVisualized[0].length - 1] * 1.1) 
+          / SizePerFilePanel.yAxisIntervalsScale ) * SizePerFilePanel.yAxisIntervalsScale;
+    let stepSize = Math.floor(maxGraphValue / SizePerFilePanel.yAxisIntervalsScale);
 
     const bodyStyle =
       config.width > 0 && config.height > 0
@@ -351,10 +353,10 @@ export default class SizePerFilePanel {
                   }
                 });
                 function showPrevious(){
-                  vscode.postMessage({command: 'Previous'})
+                  vscode.postMessage({command: '${ButtonActions.Previous}'})
                 }
                 function showNext(){
-                  vscode.postMessage({command: 'Next'})
+                  vscode.postMessage({command: '${ButtonActions.Next}'})
                 }
               </script>
             </body>

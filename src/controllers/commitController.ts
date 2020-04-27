@@ -8,16 +8,17 @@ import WorkspaceDeterminer from '../services/WorkspaceDeterminer';
 
 export default class {
   context:vscode.ExtensionContext;
+  _config: GraphConfig;
   constructor (context:vscode.ExtensionContext) {
     this.context = context;
+    this._config = ConfigurationService.getCommitChartConfiguration();
   }
   public async showCommitsPanel() {
     var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
 
-    const config = ConfigurationService.getCommitChartConfiguration();
     try {
-      const commitsPerAuthor = await CommitRetrieverService.getAllPerAuthor(selectedWorkspace || "");
-      CommitsPanel.createOrShow(commitsPerAuthor, config, this.context);
+      const commitsPerAuthor = await CommitRetrieverService.getAllCommitsPerAuthor(selectedWorkspace || "");
+      CommitsPanel.createOrShow(commitsPerAuthor, this._config, this.context);
     } catch(error) {
       MessagePrinter.printLine(error);
     }
@@ -26,10 +27,9 @@ export default class {
   public async showCommitsPerFilePanel() {
     
     var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
-    const config = ConfigurationService.getCommitChartConfiguration();
     try {
       const commitsPerAuthor = await CommitRetrieverService.getCommitsOnAllFiles(selectedWorkspace || "");
-      CommitsPerFilePanel.createOrShow(commitsPerAuthor, config, this.context);
+      CommitsPerFilePanel.createOrShow(commitsPerAuthor, this._config, this.context);
     } catch(error) {
       MessagePrinter.printLine(error);
     }

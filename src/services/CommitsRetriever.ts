@@ -1,7 +1,7 @@
 const { exec } = require("child_process");
 
 export default class CommitsRetriever {
-  public static getAllPerAuthor(dir: string) {
+  public static getAllCommitsPerAuthor(dir: string) : Promise<CommitsPerAuthor[]> {
     const cmd = `git -C "${dir}" shortlog -sn -e --all`;
     return new Promise((resolve, reject) => {
       exec(
@@ -14,15 +14,19 @@ export default class CommitsRetriever {
           if (stderr) {
             return reject(stderr);
           }
-          const lines = stdout.split(/\n/g).slice(0, -1);
+          const lines : string[] = stdout.split(/\n/g).slice(0, -1);
           var repoTotalCommits: number = 0;
 
           lines.map((line: any) => {
-            const data = line.split("\t");
-            if (data != null) repoTotalCommits += parseInt(data[0].trim());
+            const userCommitsNumber:string = line.split("\t");
+            if (userCommitsNumber != null){
+              repoTotalCommits += parseInt(userCommitsNumber[0].trim());
+            }
           });
 
-          const commitsPerFile = lines.map((line: any) => {
+          var commitsForAllAuthors: CommitsPerAuthor[] = [];
+
+          commitsForAllAuthors = lines.map((line: any) => {
             const data = line.split("\t");
             return {
               totalCommits: data[0].trim(),
@@ -33,22 +37,13 @@ export default class CommitsRetriever {
               ).toFixed(2),
             };
           });
-          return resolve(commitsPerFile);
+          return resolve(commitsForAllAuthors);
         }
       );
     });
   }
 
-  public static getCommitsOnAllFiles(dir: string) {
-    interface LooseObject {
-      [key: string]: number;
-    }
-
-    interface BarCharItem {
-      label: string;
-      occurrences: number;
-    }
-
+  public static getCommitsOnAllFiles(dir: string) : Promise<BarCharItem[]>{
     const cmd = `cd "${dir}" && git log --oneline --pretty="format:" --name-only`;
     return new Promise((resolve, reject) => {
       exec(

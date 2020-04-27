@@ -1,7 +1,7 @@
 const { exec } = require("child_process");
 
 export default class FilesSizeRetriever {
-  public static getSizesFiles(
+  public static getFilesSizes(
     dir: string,
     skipNumberOfFiles: number
   ): Promise<[string]> {
