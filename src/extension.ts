@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-import Controller from './controllers/mainController';
+import CommitController from './controllers/commitController';
+import FileController from './controllers/fileController';
 const  { exec } = require("child_process");
 
 let isHostAUnixBasedSystem : boolean| undefined = undefined;
@@ -10,15 +11,16 @@ export function activate(context: vscode.ExtensionContext) {
       isHostAUnixBasedSystem = value
     });
   }
-  const controller = new Controller(context);
+  const commitController = new CommitController(context);
+  const fileController = new FileController(context);
   let viewCommitsDisposable = vscode.commands.registerCommand("GitGraphy.viewCommits",() => {
-    controller.showCommitsPanel();
+    commitController.showCommitsPanel();
   });
   let viewCommitsPerFileDisposable = vscode.commands.registerCommand("GitGraphy.viewCommitsPerFile",() => {
-    controller.showCommitsPerFilePanel();
+    commitController.showCommitsPerFilePanel();
   });
   let viewsizessPerFileDisposable = vscode.commands.registerCommand("GitGraphy.viewSizePerFile",() => {
-    controller.showSizesPerFilePanel(isHostAUnixBasedSystem);
+    fileController.showSizesPerFilePanel(isHostAUnixBasedSystem);
   });
   context.subscriptions.push(viewCommitsDisposable);
   context.subscriptions.push(viewCommitsPerFileDisposable);
