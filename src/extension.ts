@@ -6,9 +6,9 @@ const  { exec } = require("child_process");
 let isHostAUnixBasedSystem : boolean| undefined = undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-  if(isHostAUnixBasedSystem == undefined){
+  if(isHostAUnixBasedSystem === undefined){
     getHostType().then((value) => {
-      isHostAUnixBasedSystem = value
+      isHostAUnixBasedSystem = value;
     });
   }
   const commitController = new CommitController(context);

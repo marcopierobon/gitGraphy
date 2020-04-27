@@ -26,9 +26,10 @@ export default class {
 
   public async showCommitsPerFilePanel() {
     
+    var skipNumberOfFiles = 0;
     var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
     try {
-      const commitsPerAuthor = await CommitRetrieverService.getCommitsOnAllFiles(selectedWorkspace || "");
+      const commitsPerAuthor = await CommitRetrieverService.getCommitsOnAllFiles(selectedWorkspace || "", skipNumberOfFiles);
       CommitsPerFilePanel.createOrShow(commitsPerAuthor, this._config, this.context);
     } catch(error) {
       MessagePrinter.printLine(error);

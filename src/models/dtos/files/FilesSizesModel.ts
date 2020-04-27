@@ -1,7 +1,7 @@
-interface FilesSizesGraphModel{
+interface GraphDataModel{
     filesNameLabels: string[] | undefined;
-    filesSizes: number[] | undefined;
-    dataSizeSpecifier: string | undefined;
+    numbersToBeGraphed: number[] | undefined;
+    numbersToBeGraphedSpecifier: string | undefined;
     maxGraphValueYAxis: number | undefined;
     stepSizeYAxis: number | undefined;
 }

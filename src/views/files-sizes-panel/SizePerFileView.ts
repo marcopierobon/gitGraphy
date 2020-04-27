@@ -69,6 +69,7 @@ export default class SizePerFilePanel {
       async (message) => {
         let filesWithSizes: [string] | undefined = undefined;
         var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
+        var isReDrawNecessary = false;
 
         switch (message.command) {
           case ButtonActions.Previous:
@@ -78,6 +79,7 @@ export default class SizePerFilePanel {
               SizePerFilePanel.currentFilesBeingSkipped
             );
             MessagePrinter.printLine("Previous files shown");
+            isReDrawNecessary = true;
             break;
           case ButtonActions.Next:
             if (SizePerFilePanel.currentFilesBeingSkipped >= 10) {
@@ -86,6 +88,7 @@ export default class SizePerFilePanel {
                 selectedWorkspace || "",
                 SizePerFilePanel.currentFilesBeingSkipped
               );
+              isReDrawNecessary = true;
             } else {
               vscode.window.showInformationMessage(
                 "You are already seeing the biggest files in the repository. " +
@@ -94,23 +97,25 @@ export default class SizePerFilePanel {
             }
             break;
           default:
-            throw new Error (
+            throw new Error(
               "The message of type " + message.command + " was not expected"
             );
         }
-        const webViewContent = this.getWebviewContent(
-          filesWithSizes,
-          config,
-          ChartJSSrc
-        );
-        this._panel.webview.html = webViewContent;
+        if (isReDrawNecessary) {
+          const webViewContent = this.getWebviewContent(
+            filesWithSizes,
+            config,
+            ChartJSSrc
+          );
+          this._panel.webview.html = webViewContent;
+        }
       },
       undefined,
       undefined
     );
   }
 
-  scaleDataAndRemoveSizeFormatter(data: any): FilesSizesGraphModel {
+  scaleDataAndRemoveSizeFormatter(data: any): GraphDataModel {
     var sizeMultipliers = [
       { name: "b" },
       { name: "k" },
@@ -123,18 +128,16 @@ export default class SizePerFilePanel {
       data.length === 0 ||
       data[0] === null ||
       data[data.length - 1] === null
-    ){
+    ) {
       return {
-        dataSizeSpecifier: undefined,
-        filesSizes: undefined,
+        numbersToBeGraphedSpecifier: undefined,
+        numbersToBeGraphed: undefined,
         filesNameLabels: undefined,
         maxGraphValueYAxis: undefined,
-        stepSizeYAxis: undefined
+        stepSizeYAxis: undefined,
       };
     }
-    var biggestElementSizeSpecifier = data[0][
-      data[0].length - 1
-    ].toLowerCase();
+    var biggestElementSizeSpecifier = data[0][data[0].length - 1].toLowerCase();
     var smallestElementSizeSpecifier = data[data.length - 1][
       data[data.length - 1].length - 1
     ].toLowerCase();
@@ -154,11 +157,11 @@ export default class SizePerFilePanel {
         Number(currentFileSize.replace(regExForDataSizeNonSensitive, ""))
       );
       return {
-        dataSizeSpecifier: smallestElementSizeSpecifier,
-        filesSizes: dataAlreadyScaledToTheSameUnit.reverse(),
+        numbersToBeGraphedSpecifier: smallestElementSizeSpecifier,
+        numbersToBeGraphed: dataAlreadyScaledToTheSameUnit.reverse(),
         filesNameLabels: undefined,
         maxGraphValueYAxis: undefined,
-        stepSizeYAxis: undefined
+        stepSizeYAxis: undefined,
       };
     } else {
       var dataScaledToTheSameUnit = data.map((currentFileSize: any) => {
@@ -196,11 +199,11 @@ export default class SizePerFilePanel {
       });
 
       return {
-        dataSizeSpecifier: smallestElementSizeSpecifier,
-        filesSizes: dataScaledToTheSameUnit.reverse(),
+        numbersToBeGraphedSpecifier: smallestElementSizeSpecifier,
+        numbersToBeGraphed: dataScaledToTheSameUnit.reverse(),
         filesNameLabels: undefined,
         maxGraphValueYAxis: undefined,
-        stepSizeYAxis: undefined
+        stepSizeYAxis: undefined,
       };
     }
   }
@@ -214,29 +217,38 @@ export default class SizePerFilePanel {
     config: GraphConfig,
     ChartJSSrc: vscode.Uri
   ) {
-    if(fileNameAndSizePairs === undefined){
+    if (fileNameAndSizePairs === undefined) {
       return "";
     }
     const labels = fileNameAndSizePairs.map((fileNameAndSize: any) =>
       this.compileOccurrentInfo(fileNameAndSize.fileName)
     );
-    let filesSizesGraphModel: FilesSizesGraphModel = this.scaleDataAndRemoveSizeFormatter(
+    let filesSizesGraphModel: GraphDataModel = this.scaleDataAndRemoveSizeFormatter(
       fileNameAndSizePairs.map(
         (fileNameAndSize: any) => fileNameAndSize.fileSize
       )
     );
-    if(filesSizesGraphModel.filesSizes === undefined){
+    if (filesSizesGraphModel.numbersToBeGraphed === undefined) {
       throw new Error("The values to be displayed were not set");
     }
     filesSizesGraphModel.maxGraphValueYAxis =
       Math.ceil(
-        (filesSizesGraphModel.filesSizes[filesSizesGraphModel.filesSizes.length - 1] * 1.1) 
-          / SizePerFilePanel.yAxisIntervalsScale ) * SizePerFilePanel.yAxisIntervalsScale;
-      filesSizesGraphModel.stepSizeYAxis = Math.floor(filesSizesGraphModel.maxGraphValueYAxis / SizePerFilePanel.yAxisIntervalsScale);
+        (filesSizesGraphModel.numbersToBeGraphed[
+          filesSizesGraphModel.numbersToBeGraphed.length - 1
+        ] *
+          1.1) /
+          SizePerFilePanel.yAxisIntervalsScale
+      ) * SizePerFilePanel.yAxisIntervalsScale;
+    filesSizesGraphModel.stepSizeYAxis = Math.floor(
+      filesSizesGraphModel.maxGraphValueYAxis /
+        SizePerFilePanel.yAxisIntervalsScale
+    );
 
     const bodyStyle =
-      config.width !== undefined && config.width > 0 && 
-      config.height !== undefined && config.height > 0
+      config.width !== undefined &&
+      config.width > 0 &&
+      config.height !== undefined &&
+      config.height > 0
         ? `body { 
       width:  ${config.width}px; 
       height: ${config.height}px}; 
@@ -272,7 +284,7 @@ export default class SizePerFilePanel {
                     labels: [${labels}],
                     datasets: [{
                         label: 'X',
-                        data: [${filesSizesGraphModel.filesSizes}],
+                        data: [${filesSizesGraphModel.numbersToBeGraphed}],
                         borderWidth: 2,
                         backgroundColor: ${Constants.colors}
                     }]
@@ -303,7 +315,7 @@ export default class SizePerFilePanel {
                           max: ${filesSizesGraphModel.maxGraphValueYAxis},
                           stepSize: ${filesSizesGraphModel.stepSizeYAxis},
                           callback: function(value, index, values) {
-                              return value +  ' ${filesSizesGraphModel.dataSizeSpecifier}b'
+                              return value +  ' ${filesSizesGraphModel.numbersToBeGraphedSpecifier}b'
                           }
                         }
                       }]
@@ -317,7 +329,7 @@ export default class SizePerFilePanel {
                           return data.labels[idx]; 
                         },
                         label: function(tooltipItem, data) {
-                          return data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' ${filesSizesGraphModel.dataSizeSpecifier}b';
+                          return data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' ${filesSizesGraphModel.numbersToBeGraphedSpecifier}b';
                         }
                       }
                     },

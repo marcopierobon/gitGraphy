@@ -1,6 +1,7 @@
 const { exec } = require("child_process");
 
 export default class CommitsRetriever {
+  private static filesWithCommitsNumberArray: BarCharModel[] | undefined = undefined;
   public static getAllCommitsPerAuthor(dir: string) : Promise<CommitsPerAuthor[]> {
     const cmd = `git -C "${dir}" shortlog -sn -e --all`;
     return new Promise((resolve, reject) => {
@@ -43,7 +44,10 @@ export default class CommitsRetriever {
     });
   }
 
-  public static getCommitsOnAllFiles(dir: string) : Promise<BarCharItem[]>{
+  public static getCommitsOnAllFiles(dir: string,
+    skipNumberOfFiles: number) 
+    : Promise<BarCharModel[]>{
+    if(CommitsRetriever.filesWithCommitsNumberArray === undefined ){
     const cmd = `cd "${dir}" && git log --oneline --pretty="format:" --name-only`;
     return new Promise((resolve, reject) => {
       exec(
@@ -73,7 +77,7 @@ export default class CommitsRetriever {
               numberOfChangesPerFileDict[currentChangedFile]++;
             }
           }
-          var numberOfChangesPerFileDictInPlotFormat: BarCharItem[] = [];
+          var numberOfChangesPerFileDictInPlotFormat: BarCharModel[] = [];
 
           Object.keys(numberOfChangesPerFileDict).forEach((element) => {
             if (
@@ -83,7 +87,7 @@ export default class CommitsRetriever {
             ) {
               delete numberOfChangesPerFileDict[element];
             } else {
-              var numberOfChangesPerFileDictInPlotFormatItem: BarCharItem = {
+              var numberOfChangesPerFileDictInPlotFormatItem: BarCharModel = {
                 label: element,
                 occurrences: numberOfChangesPerFileDict[element],
               };
@@ -94,14 +98,29 @@ export default class CommitsRetriever {
           });
 
           numberOfChangesPerFileDictInPlotFormat = numberOfChangesPerFileDictInPlotFormat
-            .sort((n1: BarCharItem, n2: BarCharItem) =>
-              n1.occurrences > n2.occurrences ? -1 : 1
-            )
-            .slice(0, 9);
+            .sort((n1: BarCharModel, n2: BarCharModel) =>
+              n1.occurrences > n2.occurrences ? 1 : -1
+            );
 
-          return resolve(numberOfChangesPerFileDictInPlotFormat);
+            CommitsRetriever.filesWithCommitsNumberArray = numberOfChangesPerFileDictInPlotFormat;
+            if(CommitsRetriever.filesWithCommitsNumberArray === undefined){
+              throw new Error ("Could not get the files with their commits");
+            }
+            return resolve(CommitsRetriever.filesWithCommitsNumberArray.slice(-10));
         }
       );
+      
     });
+    
+  }
+  
+  return new Promise<BarCharModel[]>((resolve) => {
+    if(CommitsRetriever.filesWithCommitsNumberArray === undefined){
+      throw new Error ("Could not get the files with their commits");
+    }
+    var arrayLength = CommitsRetriever.filesWithCommitsNumberArray.length;
+    resolve(CommitsRetriever.filesWithCommitsNumberArray
+      .slice(arrayLength - 10 - skipNumberOfFiles, arrayLength - skipNumberOfFiles));
+  });
   }
 }
