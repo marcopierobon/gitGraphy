@@ -11,6 +11,7 @@ Visualize statistics of your git repository directly within Visual Studio Code.
 ## Main Features
 - View commits by author as a pie chart (based on [chartjs](https://www.chartjs.org/))
 - View number of commits per file as a bar (based on [chartjs](https://www.chartjs.org/))
+- Display the biggest files in the repo (based on [chartjs](https://www.chartjs.org/))
 
 ## Useful commands
 Open the Command Palette (Command+Shift+P on macOS and Ctrl+Shift+P on Windows/Linux) and type in one of the following commands:

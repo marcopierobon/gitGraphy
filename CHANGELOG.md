@@ -1,3 +1,6 @@
+## 1.0.11 (27 Apr 2020)
+* Ability to iterate through pages in the show files with the highest amount of commits.
+
 ## 1.0.8 (27 Apr 2020)
 * Allow to iterate through the large files in the the large file command view.
 * Improved visualisation for the large file view:
