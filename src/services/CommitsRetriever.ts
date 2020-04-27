@@ -19,7 +19,7 @@ export default class CommitsRetriever {
 
           lines.map((line: any) => {
             const userCommitsNumber:string = line.split("\t");
-            if (userCommitsNumber != null){
+            if (userCommitsNumber !== null){
               repoTotalCommits += parseInt(userCommitsNumber[0].trim());
             }
           });
@@ -66,7 +66,8 @@ export default class CommitsRetriever {
             lineIndex++
           ) {
             var currentChangedFile: string = gitLogOutputLines[lineIndex];
-            if (numberOfChangesPerFileDict[currentChangedFile] == null) {
+            if (numberOfChangesPerFileDict[currentChangedFile] === null ||
+                numberOfChangesPerFileDict[currentChangedFile] === undefined) {
               numberOfChangesPerFileDict[currentChangedFile] = 1;
             } else {
               numberOfChangesPerFileDict[currentChangedFile]++;
@@ -77,8 +78,8 @@ export default class CommitsRetriever {
           Object.keys(numberOfChangesPerFileDict).forEach((element) => {
             if (
               numberOfChangesPerFileDict[element] <= 1 ||
-              element == null ||
-              element == ""
+              element === null || element === undefined ||
+              element === ""
             ) {
               delete numberOfChangesPerFileDict[element];
             } else {
