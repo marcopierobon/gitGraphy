@@ -110,7 +110,7 @@ export default class SizePerFilePanel {
     );
   }
 
-  scaleDataAndRemoveSizeFormatter(data: any): [number[], string, number] {
+  scaleDataAndRemoveSizeFormatter(data: any): FilesSizesGraphModel {
     var sizeMultipliers = [
       { name: "b" },
       { name: "k" },
@@ -124,7 +124,13 @@ export default class SizePerFilePanel {
       data[0] === null ||
       data[data.length - 1] === null
     ){
-      return [[], "", scaleDifferenceBetweenSmallestAndBiggestFileSizes];
+      return {
+        dataSizeSpecifier: undefined,
+        filesSizes: undefined,
+        filesNameLabels: undefined,
+        maxGraphValueYAxis: undefined,
+        stepSizeYAxis: undefined
+      };
     }
     var biggestElementSizeSpecifier = data[0][
       data[0].length - 1
@@ -147,11 +153,13 @@ export default class SizePerFilePanel {
       var dataAlreadyScaledToTheSameUnit = data.map((currentFileSize: any) =>
         Number(currentFileSize.replace(regExForDataSizeNonSensitive, ""))
       );
-      return [
-        dataAlreadyScaledToTheSameUnit.reverse(),
-        smallestElementSizeSpecifier,
-        scaleDifferenceBetweenSmallestAndBiggestFileSizes,
-      ];
+      return {
+        dataSizeSpecifier: smallestElementSizeSpecifier,
+        filesSizes: dataAlreadyScaledToTheSameUnit.reverse(),
+        filesNameLabels: undefined,
+        maxGraphValueYAxis: undefined,
+        stepSizeYAxis: undefined
+      };
     } else {
       var dataScaledToTheSameUnit = data.map((currentFileSize: any) => {
         var currentFileSizeSpecifier = currentFileSize[
@@ -187,11 +195,13 @@ export default class SizePerFilePanel {
         );
       });
 
-      return [
-        dataScaledToTheSameUnit.reverse(),
-        smallestElementSizeSpecifier,
-        scaleDifferenceBetweenSmallestAndBiggestFileSizes,
-      ];
+      return {
+        dataSizeSpecifier: smallestElementSizeSpecifier,
+        filesSizes: dataScaledToTheSameUnit.reverse(),
+        filesNameLabels: undefined,
+        maxGraphValueYAxis: undefined,
+        stepSizeYAxis: undefined
+      };
     }
   }
 
@@ -200,30 +210,33 @@ export default class SizePerFilePanel {
   }
 
   private getWebviewContent(
-    fileNameAndSizePairs: any | [],
-    config: any,
+    fileNameAndSizePairs: [string] | undefined,
+    config: GraphConfig,
     ChartJSSrc: vscode.Uri
   ) {
+    if(fileNameAndSizePairs === undefined){
+      return "";
+    }
     const labels = fileNameAndSizePairs.map((fileNameAndSize: any) =>
       this.compileOccurrentInfo(fileNameAndSize.fileName)
     );
-    let dataToBeVisualized: [
-      number[],
-      string,
-      number
-    ] = this.scaleDataAndRemoveSizeFormatter(
+    let filesSizesGraphModel: FilesSizesGraphModel = this.scaleDataAndRemoveSizeFormatter(
       fileNameAndSizePairs.map(
         (fileNameAndSize: any) => fileNameAndSize.fileSize
       )
     );
-    let maxGraphValue =
+    if(filesSizesGraphModel.filesSizes === undefined){
+      throw new Error("The values to be displayed were not set");
+    }
+    filesSizesGraphModel.maxGraphValueYAxis =
       Math.ceil(
-        (dataToBeVisualized[0][dataToBeVisualized[0].length - 1] * 1.1) 
+        (filesSizesGraphModel.filesSizes[filesSizesGraphModel.filesSizes.length - 1] * 1.1) 
           / SizePerFilePanel.yAxisIntervalsScale ) * SizePerFilePanel.yAxisIntervalsScale;
-    let stepSize = Math.floor(maxGraphValue / SizePerFilePanel.yAxisIntervalsScale);
+      filesSizesGraphModel.stepSizeYAxis = Math.floor(filesSizesGraphModel.maxGraphValueYAxis / SizePerFilePanel.yAxisIntervalsScale);
 
     const bodyStyle =
-      config.width > 0 && config.height > 0
+      config.width !== undefined && config.width > 0 && 
+      config.height !== undefined && config.height > 0
         ? `body { 
       width:  ${config.width}px; 
       height: ${config.height}px}; 
@@ -259,7 +272,7 @@ export default class SizePerFilePanel {
                     labels: [${labels}],
                     datasets: [{
                         label: 'X',
-                        data: [${dataToBeVisualized[0]}],
+                        data: [${filesSizesGraphModel.filesSizes}],
                         borderWidth: 2,
                         backgroundColor: ${Constants.colors}
                     }]
@@ -287,10 +300,10 @@ export default class SizePerFilePanel {
                         ticks: {
                           beginAtZero: true,
                           min: 0,
-                          max: ${maxGraphValue},
-                          stepSize: ${stepSize},
+                          max: ${filesSizesGraphModel.maxGraphValueYAxis},
+                          stepSize: ${filesSizesGraphModel.stepSizeYAxis},
                           callback: function(value, index, values) {
-                              return value +  ' ${dataToBeVisualized[1]}b'
+                              return value +  ' ${filesSizesGraphModel.dataSizeSpecifier}b'
                           }
                         }
                       }]
@@ -304,7 +317,7 @@ export default class SizePerFilePanel {
                           return data.labels[idx]; 
                         },
                         label: function(tooltipItem, data) {
-                          return data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' ${dataToBeVisualized[1]}b';
+                          return data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' ${filesSizesGraphModel.dataSizeSpecifier}b';
                         }
                       }
                     },

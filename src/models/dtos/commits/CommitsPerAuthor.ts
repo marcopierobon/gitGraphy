@@ -1,5 +1,5 @@
 interface CommitsPerAuthor{
-    totalCommits: number,
-    author: string,
-    percentageOfAllCommits: string
+    totalCommits: number;
+    author: string;
+    percentageOfAllCommits: string;
 }
