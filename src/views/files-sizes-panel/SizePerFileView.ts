@@ -14,11 +14,13 @@ export default class SizePerFilePanel {
   private _disposables: vscode.Disposable[] = [];
   private static currentFilesBeingSkipped = 0;
   private static yAxisIntervalsScale = 10;
+  private isHostAUnixBasedSystem: boolean;
 
   public static createOrShow(
-    commitsPerFile: [string],
+    commitsPerFile: string[],
     config: GraphConfig,
-    context: vscode.ExtensionContext
+    context: vscode.ExtensionContext,
+    isHostAUnixBasedSystem : boolean
   ) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
@@ -27,6 +29,7 @@ export default class SizePerFilePanel {
       SizePerFilePanel.currentPanel._panel.reveal(column);
       return;
     }
+
 
     const panel = vscode.window.createWebviewPanel(
       "FileSizePanel",
@@ -46,15 +49,17 @@ export default class SizePerFilePanel {
       panel,
       commitsPerFile,
       config,
-      ChartJSSrc
+      ChartJSSrc,
+      isHostAUnixBasedSystem
     );
   }
 
   private constructor(
     panel: vscode.WebviewPanel,
-    commitsPerFile: [string],
+    commitsPerFile: string[],
     config: GraphConfig,
-    ChartJSSrc: vscode.Uri
+    ChartJSSrc: vscode.Uri,
+    isHostAUnixBasedSystem: boolean
   ) {
     this._panel = panel;
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
@@ -64,29 +69,31 @@ export default class SizePerFilePanel {
       ChartJSSrc
     );
     this._panel.webview.html = webViewContent;
-
+      this.isHostAUnixBasedSystem = isHostAUnixBasedSystem;
     this._panel.webview.onDidReceiveMessage(
-      async (message) => {
-        let filesWithSizes: [string] | undefined = undefined;
+      async (message: { command: string; }) => {
+        let filesWithSizes: string[] | undefined = undefined;
         var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
         var isReDrawNecessary = false;
 
         switch (message.command) {
           case ButtonActions.Previous:
-            SizePerFilePanel.currentFilesBeingSkipped += 10;
-            filesWithSizes = await FilesSizeRetriever.getFilesSizes(
-              selectedWorkspace || "",
-              SizePerFilePanel.currentFilesBeingSkipped
-            );
-            MessagePrinter.printLine("Previous files shown");
-            isReDrawNecessary = true;
+              SizePerFilePanel.currentFilesBeingSkipped += 10;
+              filesWithSizes = await FilesSizeRetriever.getFilesSizes(
+                selectedWorkspace || "",
+                SizePerFilePanel.currentFilesBeingSkipped,
+                isHostAUnixBasedSystem
+              );
+              MessagePrinter.printLine("Previous files shown");
+              isReDrawNecessary = true;
             break;
           case ButtonActions.Next:
             if (SizePerFilePanel.currentFilesBeingSkipped >= 10) {
               SizePerFilePanel.currentFilesBeingSkipped -= 10;
               filesWithSizes = await FilesSizeRetriever.getFilesSizes(
                 selectedWorkspace || "",
-                SizePerFilePanel.currentFilesBeingSkipped
+                SizePerFilePanel.currentFilesBeingSkipped,
+                isHostAUnixBasedSystem
               );
               isReDrawNecessary = true;
             } else {
@@ -213,7 +220,7 @@ export default class SizePerFilePanel {
   }
 
   private getWebviewContent(
-    fileNameAndSizePairs: [string] | undefined,
+    fileNameAndSizePairs: string[] | undefined,
     config: GraphConfig,
     ChartJSSrc: vscode.Uri
   ) {

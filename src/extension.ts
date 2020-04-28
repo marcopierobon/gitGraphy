@@ -32,13 +32,15 @@ function getHostType(): Promise<boolean> {
     exec(cmd, { maxBuffer: 1024 * 50 * 1000 },  (err: any, stdout: any, stderr: any) => {
       if (err) {
         isHostAUnixBasedSystem = false;
+        return isHostAUnixBasedSystem;
       }
       if (stderr) {
         isHostAUnixBasedSystem = false;
+        return isHostAUnixBasedSystem;
       }
       isHostAUnixBasedSystem = true;
+      return isHostAUnixBasedSystem;
     });
-    return isHostAUnixBasedSystem;
   });
 }
 
