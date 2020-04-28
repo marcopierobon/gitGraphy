@@ -1,3 +1,8 @@
+## 1.0.12 (28 Apr 2020)
+* Extended the large file visualisation to support Windows
+* Extend the large file visualisation to analyse all the files in the repo in the first scan and to reuse the scan when
+  browsing through the pages
+
 ## 1.0.11 (27 Apr 2020)
 * Ability to iterate through pages in the show files with the highest amount of commits.
 
