@@ -48,6 +48,10 @@
       {
         "command": "GitGraphy.viewSizePerFile",
         "title": "GitGraphy: View Largest files"
+      },
+      {
+        "command": "GitGraphy.viewFilesWithMostContributors",
+        "title": "GitGraphy: View the files with the most contributors"
       }
     ],
     "configuration": {
