@@ -2,7 +2,7 @@ const { exec } = require("child_process");
 
 export default class FilesSizeRetriever {
   private static _fileSizeMultiplier = 1024;
-  public static filesWithSizesArray: string[] | undefined = undefined;
+  static filesWithSizesArray: string[] | undefined = undefined;
     
   public static getFilesSizes(
     dir: string,
@@ -36,7 +36,21 @@ export default class FilesSizeRetriever {
                 }
               );
               FilesSizeRetriever.filesWithSizesArray = fileNameAndSizePairs;
-              return resolve(fileNameAndSizePairs);
+              var lowestBoundary =
+                skipNumberOfFiles <
+                FilesSizeRetriever.filesWithSizesArray.length
+                  ? skipNumberOfFiles
+                  : FilesSizeRetriever.filesWithSizesArray.length;
+              var upperBoundary = Math.min(
+                FilesSizeRetriever.filesWithSizesArray.length,
+                10 + skipNumberOfFiles
+              );
+              return resolve(
+                FilesSizeRetriever.filesWithSizesArray.slice(
+                  lowestBoundary,
+                  upperBoundary
+                )
+              );
             }
           );
         });

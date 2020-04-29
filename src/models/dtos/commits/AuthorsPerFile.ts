@@ -1,9 +1,9 @@
 interface Authors{
     authors: string[];
-    numberOfAuthors: number;
 }
 
 interface AuthorsPerFile{
-    authors: Authors;
+    authors: string[];
+    numberOfAuthors: number;
     filename: string;
 }

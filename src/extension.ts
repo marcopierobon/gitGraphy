@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
     fileController.showSizesPerFilePanel(isHostAUnixBasedSystem);
   });
   let viewContributiosPerFileDisposable = vscode.commands.registerCommand("GitGraphy.viewFilesWithMostContributors",() => {
-    fileController.showContributorsPerFilePanel(isHostAUnixBasedSystem);
+    commitController.showContributorsPerFilePanel(isHostAUnixBasedSystem);
   });
   
   context.subscriptions.push(viewCommitsDisposable);

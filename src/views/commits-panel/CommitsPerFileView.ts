@@ -72,13 +72,23 @@ export default class CommitsPerFilePanel {
 
         switch (message.command) {
           case ButtonActions.Previous:
-            CommitsPerFilePanel.currentFilesBeingSkipped += 10;
-            filesWithSizes = await CommitsRetriever.getCommitsOnAllFiles(
-              selectedWorkspace || "",
-              CommitsPerFilePanel.currentFilesBeingSkipped
-            );
-            isReDrawNecessary = true;
-            MessagePrinter.printLine("Previous files shown");
+            if (
+              CommitsRetriever.commitsNumberPerFileOrdered !== undefined &&
+              CommitsPerFilePanel.currentFilesBeingSkipped + 10 <
+                CommitsRetriever.commitsNumberPerFileOrdered.length
+            ) {
+              CommitsPerFilePanel.currentFilesBeingSkipped += 10;
+              filesWithSizes = await CommitsRetriever.getCommitsOnAllFiles(
+                selectedWorkspace || "",
+                CommitsPerFilePanel.currentFilesBeingSkipped
+              );
+              isReDrawNecessary = true;
+              MessagePrinter.printLine("Previous files shown");
+            } else {
+              vscode.window.showInformationMessage(
+                "You are already seeing the smallest amount of commits in the repository. "
+              );
+            }
             break;
           case ButtonActions.Next:
             if (CommitsPerFilePanel.currentFilesBeingSkipped >= 10) {
@@ -90,8 +100,7 @@ export default class CommitsPerFilePanel {
               isReDrawNecessary = true;
             } else {
               vscode.window.showInformationMessage(
-                "You are already seeing the highest amount of commits in the repository. " +
-                  CommitsPerFilePanel.currentFilesBeingSkipped
+                "You are already seeing the highest amount of commits in the repository. "
               );
             }
             break;
@@ -129,7 +138,7 @@ export default class CommitsPerFilePanel {
       );
     }
     let commitsPerFileGraphDataModel: GraphDataModel = {
-      filesNameLabels: commitsPerFile.map((commit: any) =>
+      dataLabels: commitsPerFile.map((commit: any) =>
         this.compileOccurrentInfo(commit.label)
       ),
       numbersToBeGraphed: commitsPerFile.map(
@@ -193,7 +202,7 @@ export default class CommitsPerFilePanel {
                 var chart = new Chart(ctx, {
                   type: 'bar',
                   data: {
-                    labels: [${commitsPerFileGraphDataModel.filesNameLabels}],
+                    labels: [${commitsPerFileGraphDataModel.dataLabels}],
                     datasets: [{
                         label: 'Number of commits',
                         data: [${commitsPerFileGraphDataModel.numbersToBeGraphed}],

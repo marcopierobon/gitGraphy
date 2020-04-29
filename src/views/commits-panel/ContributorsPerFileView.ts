@@ -2,20 +2,20 @@ import * as vscode from "vscode";
 import * as path from "path";
 import Constants from "../../utils/constants";
 import MessagePrinter from "../../services/MessagePrinter";
-import FilesSizeRetriever from "../../services/FilesSizeRetriever";
 import WorkspaceDeterminer from "../../services/WorkspaceDeterminer";
 import ButtonActions from "../../models/commands/ButtonActions";
+import CommitsRetriever from "../../services/CommitsRetriever";
 
-export default class SizePerFilePanel {
-  private static _fileSizeMultiplier = 1024;
-  public static currentPanel: SizePerFilePanel | undefined;
+export default class ContributorsPerFilePanel {
+  public static currentPanel: ContributorsPerFilePanel | undefined;
+
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
   private static currentFilesBeingSkipped = 0;
-  private static yAxisIntervalsScale = 10;
+  private static yAxisIntervalsScale = 5;
 
   public static createOrShow(
-    commitsPerFile: string[],
+    commitsPerFile: AuthorsPerFile[] | undefined,
     config: GraphConfig,
     context: vscode.ExtensionContext,
     isHostAUnixBasedSystem: boolean
@@ -23,14 +23,14 @@ export default class SizePerFilePanel {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
-    if (SizePerFilePanel.currentPanel) {
-      SizePerFilePanel.currentPanel._panel.reveal(column);
+    if (ContributorsPerFilePanel.currentPanel) {
+      ContributorsPerFilePanel.currentPanel._panel.reveal(column);
       return;
     }
 
     const panel = vscode.window.createWebviewPanel(
-      "FileSizePanel",
-      "View File Sizes",
+      "FileContributorsPanel",
+      "View File Contributors",
       column || vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -42,7 +42,7 @@ export default class SizePerFilePanel {
     );
 
     const ChartJSSrc = ChartJSFilePath.with({ scheme: "vscode-resource" });
-    SizePerFilePanel.currentPanel = new SizePerFilePanel(
+    ContributorsPerFilePanel.currentPanel = new ContributorsPerFilePanel(
       panel,
       commitsPerFile,
       config,
@@ -53,7 +53,7 @@ export default class SizePerFilePanel {
 
   private constructor(
     panel: vscode.WebviewPanel,
-    commitsPerFile: string[],
+    commitsPerFile: AuthorsPerFile[] | undefined,
     config: GraphConfig,
     ChartJSSrc: vscode.Uri,
     isHostAUnixBasedSystem: boolean
@@ -68,43 +68,42 @@ export default class SizePerFilePanel {
     this._panel.webview.html = webViewContent;
     this._panel.webview.onDidReceiveMessage(
       async (message: { command: string }) => {
-        let filesWithSizes: string[] | undefined = undefined;
+        let filesWithSizes: AuthorsPerFile[] | undefined = undefined;
         var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
         var isReDrawNecessary = false;
 
         switch (message.command) {
           case ButtonActions.Previous:
-            if (
-              FilesSizeRetriever.filesWithSizesArray !== undefined &&
-              SizePerFilePanel.currentFilesBeingSkipped + 10 <
-                FilesSizeRetriever.filesWithSizesArray.length
-            ) {
-              SizePerFilePanel.currentFilesBeingSkipped += 10;
-              filesWithSizes = await FilesSizeRetriever.getFilesSizes(
+            if(CommitsRetriever.authorsPerFileOrdered !== undefined &&
+              ContributorsPerFilePanel.currentFilesBeingSkipped + 20 <
+              CommitsRetriever.authorsPerFileOrdered.length){
+              ContributorsPerFilePanel.currentFilesBeingSkipped += 10;
+              filesWithSizes = await CommitsRetriever.getContributorsPerFile(
                 selectedWorkspace || "",
-                SizePerFilePanel.currentFilesBeingSkipped,
+                ContributorsPerFilePanel.currentFilesBeingSkipped,
                 isHostAUnixBasedSystem
               );
               MessagePrinter.printLine("Previous files shown");
               isReDrawNecessary = true;
-            } else {
+            }
+            else{
               vscode.window.showInformationMessage(
-                "You are already seeing the smallest files in the repository. "
+                "You are already seeing the files with the least contributors in the repository. "
               );
             }
             break;
           case ButtonActions.Next:
-            if (SizePerFilePanel.currentFilesBeingSkipped >= 10) {
-              SizePerFilePanel.currentFilesBeingSkipped -= 10;
-              filesWithSizes = await FilesSizeRetriever.getFilesSizes(
+            if (ContributorsPerFilePanel.currentFilesBeingSkipped >= 10) {
+              ContributorsPerFilePanel.currentFilesBeingSkipped -= 10;
+              filesWithSizes = await CommitsRetriever.getContributorsPerFile(
                 selectedWorkspace || "",
-                SizePerFilePanel.currentFilesBeingSkipped,
+                ContributorsPerFilePanel.currentFilesBeingSkipped,
                 isHostAUnixBasedSystem
               );
               isReDrawNecessary = true;
             } else {
               vscode.window.showInformationMessage(
-                "You are already seeing the biggest files in the repository. "
+                "You are already seeing the files with the most contributors in the repository. "
               );
             }
             break;
@@ -127,97 +126,36 @@ export default class SizePerFilePanel {
     );
   }
 
-  scaleDataAndRemoveSizeFormatter(data: any): GraphDataModel {
-    var sizeMultipliers = [
-      { name: "b" },
-      { name: "k" },
-      { name: "m" },
-      { name: "g" },
-    ];
-    let scaleDifferenceBetweenSmallestAndBiggestFileSizes = 0;
-    if (
-      data === null ||
-      data.length === 0 ||
-      data[0] === null ||
-      data[data.length - 1] === null
-    ) {
-      return {
-        numbersToBeGraphedSpecifier: undefined,
-        numbersToBeGraphed: undefined,
-        dataLabels: undefined,
-        maxGraphValueYAxis: undefined,
-        stepSizeYAxis: undefined,
-      };
-    }
-    var biggestElementSizeSpecifier = data[0][data[0].length - 1].toLowerCase();
-    var smallestElementSizeSpecifier = data[data.length - 1][
-      data[data.length - 1].length - 1
-    ].toLowerCase();
+  scaleDataAndRemoveSizeFormatter(
+    data: AuthorsPerFile[]
+  ): GraphDataModelWithAdditionalLabelInfo {
+    var numbersToBeGraphed = data.map((fileWithAuthors) => {
+      return fileWithAuthors.numberOfAuthors;
+    });
+    var labelsGraphed = data.map((fileWithAuthors) => {
+      return this.compileOccurrentInfo(fileWithAuthors.filename);
+    });
+    var optionalAdditionalLabelInformation = data.map((fileWithAuthors) => {
+      return this.compileOccurrentInfo(fileWithAuthors.authors.join("\n"));
+    });
 
-    var firstElementSizeSpecifierIndex = sizeMultipliers.findIndex(
-      (sizeMultiplier) => {
-        return sizeMultiplier.name === smallestElementSizeSpecifier;
-      }
+    var maxGraphValueYAxis =
+      Math.ceil(
+        (numbersToBeGraphed[numbersToBeGraphed.length - 1] * 1.1) /
+          ContributorsPerFilePanel.yAxisIntervalsScale
+      ) * ContributorsPerFilePanel.yAxisIntervalsScale;
+    var stepSizeYAxis = Math.floor(
+      maxGraphValueYAxis / ContributorsPerFilePanel.yAxisIntervalsScale
     );
 
-    if (smallestElementSizeSpecifier === biggestElementSizeSpecifier) {
-      var regExForDataSizeNonSensitive = new RegExp(
-        biggestElementSizeSpecifier,
-        "ig"
-      );
-      var dataAlreadyScaledToTheSameUnit = data.map((currentFileSize: any) =>
-        Number(currentFileSize.replace(regExForDataSizeNonSensitive, ""))
-      );
-      return {
-        numbersToBeGraphedSpecifier: smallestElementSizeSpecifier,
-        numbersToBeGraphed: dataAlreadyScaledToTheSameUnit.reverse(),
-        dataLabels: undefined,
-        maxGraphValueYAxis: undefined,
-        stepSizeYAxis: undefined,
-      };
-    } else {
-      var dataScaledToTheSameUnit = data.map((currentFileSize: any) => {
-        var currentFileSizeSpecifier = currentFileSize[
-          currentFileSize.length - 1
-        ].toLowerCase();
-        var currentFileSizeSpecifierIndex = sizeMultipliers.findIndex(
-          (sizeMultiplier) => {
-            return sizeMultiplier.name === currentFileSizeSpecifier;
-          }
-        );
-        var specifierMultiplier =
-          currentFileSizeSpecifierIndex - firstElementSizeSpecifierIndex;
-
-        var regExForCurrentSizeNonSensitive = new RegExp(
-          currentFileSizeSpecifier,
-          "ig"
-        );
-        var currentFileSizeWithoutSizeSpecifier = Number(
-          currentFileSize.replace(regExForCurrentSizeNonSensitive, "")
-        );
-        if (
-          specifierMultiplier >
-          scaleDifferenceBetweenSmallestAndBiggestFileSizes
-        ) {
-          scaleDifferenceBetweenSmallestAndBiggestFileSizes = specifierMultiplier;
-        }
-        return (
-          currentFileSizeWithoutSizeSpecifier *
-          Math.pow(
-            SizePerFilePanel._fileSizeMultiplier,
-            specifierMultiplier + 1
-          )
-        );
-      });
-
-      return {
-        numbersToBeGraphedSpecifier: smallestElementSizeSpecifier,
-        numbersToBeGraphed: dataScaledToTheSameUnit.reverse(),
-        dataLabels: undefined,
-        maxGraphValueYAxis: undefined,
-        stepSizeYAxis: undefined,
-      };
-    }
+    return {
+      numbersToBeGraphedSpecifier: "contributors",
+      optionalAdditionalLabelInformation: optionalAdditionalLabelInformation,
+      numbersToBeGraphed: numbersToBeGraphed,
+      dataLabels: labelsGraphed,
+      maxGraphValueYAxis: maxGraphValueYAxis,
+      stepSizeYAxis: stepSizeYAxis,
+    };
   }
 
   private compileOccurrentInfo(stringToIncludeInApostophe: any): string {
@@ -225,36 +163,19 @@ export default class SizePerFilePanel {
   }
 
   private getWebviewContent(
-    fileNameAndSizePairs: string[] | undefined,
+    authorsPerFile: AuthorsPerFile[] | undefined,
     config: GraphConfig,
     ChartJSSrc: vscode.Uri
   ) {
-    if (fileNameAndSizePairs === undefined) {
+    if (authorsPerFile === undefined) {
       return "";
     }
-    const labels = fileNameAndSizePairs.map((fileNameAndSize: any) =>
-      this.compileOccurrentInfo(fileNameAndSize.fileName)
-    );
-    let filesSizesGraphModel: GraphDataModel = this.scaleDataAndRemoveSizeFormatter(
-      fileNameAndSizePairs.map(
-        (fileNameAndSize: any) => fileNameAndSize.fileSize
-      )
+    let filesSizesGraphModel: GraphDataModelWithAdditionalLabelInfo = this.scaleDataAndRemoveSizeFormatter(
+      authorsPerFile
     );
     if (filesSizesGraphModel.numbersToBeGraphed === undefined) {
       throw new Error("The values to be displayed were not set");
     }
-    filesSizesGraphModel.maxGraphValueYAxis =
-      Math.ceil(
-        (filesSizesGraphModel.numbersToBeGraphed[
-          filesSizesGraphModel.numbersToBeGraphed.length - 1
-        ] *
-          1.1) /
-          SizePerFilePanel.yAxisIntervalsScale
-      ) * SizePerFilePanel.yAxisIntervalsScale;
-    filesSizesGraphModel.stepSizeYAxis = Math.floor(
-      filesSizesGraphModel.maxGraphValueYAxis /
-        SizePerFilePanel.yAxisIntervalsScale
-    );
 
     const bodyStyle =
       config.width !== undefined &&
@@ -276,8 +197,8 @@ export default class SizePerFilePanel {
             <body>
             <br/>
             <div align="center">
-              <button onclick="showPrevious()">Display smaller files</button>
-              <button onclick="showNext()">Display bigger files</button>
+              <button onclick="showPrevious()">Display files with fewer contributors</button>
+              <button onclick="showNext()">Display files with more contributors</button>
             </div>
               <canvas id="myChart"></canvas>
               <script src="${ChartJSSrc}"></script>
@@ -292,7 +213,7 @@ export default class SizePerFilePanel {
                 var chart = new Chart(ctx, {
                   type: 'bar',
                   data: {
-                    labels: [${labels}],
+                    labels: [${filesSizesGraphModel.dataLabels}],
                     datasets: [{
                         label: 'X',
                         data: [${filesSizesGraphModel.numbersToBeGraphed}],
@@ -326,7 +247,7 @@ export default class SizePerFilePanel {
                           max: ${filesSizesGraphModel.maxGraphValueYAxis},
                           stepSize: ${filesSizesGraphModel.stepSizeYAxis},
                           callback: function(value, index, values) {
-                              return value +  ' ${filesSizesGraphModel.numbersToBeGraphedSpecifier}b'
+                              return value +  ' ${filesSizesGraphModel.numbersToBeGraphedSpecifier}'
                           }
                         }
                       }]
@@ -340,7 +261,7 @@ export default class SizePerFilePanel {
                           return data.labels[idx]; 
                         },
                         label: function(tooltipItem, data) {
-                          return data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' ${filesSizesGraphModel.numbersToBeGraphedSpecifier}b';
+                          return data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + ' ${filesSizesGraphModel.numbersToBeGraphedSpecifier}';
                         }
                       }
                     },
@@ -373,7 +294,7 @@ export default class SizePerFilePanel {
         
                                     return {
                                         // We add the value to the string
-                                        text: label,
+                                        text: label ,
                                         fillStyle: fill,
                                         strokeStyle: stroke,
                                         lineWidth: bw,
@@ -411,7 +332,7 @@ export default class SizePerFilePanel {
   }
 
   public dispose() {
-    SizePerFilePanel.currentPanel = undefined;
+    ContributorsPerFilePanel.currentPanel = undefined;
     // Clean up our resources
     this._panel.dispose();
 
