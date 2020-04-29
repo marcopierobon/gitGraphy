@@ -4,7 +4,6 @@ import ConfigurationService from '../services/ConfigurationRetriever';
 import MessagePrinter from '../services/MessagePrinter';
 import WorkspaceDeterminer from '../services/WorkspaceDeterminer';
 import SizePerFilePanel from '../views/files-sizes-panel/SizePerFileView';
-import CommitsRetriever from '../services/CommitsRetriever';
 
 export default class {
   context:vscode.ExtensionContext;

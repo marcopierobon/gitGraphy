@@ -26,7 +26,7 @@ export default class {
     var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
     var skipNumberOfFiles = 0;
     try {
-      const filesWithSize = await CommitsRetriever.getContributorsPerFile(selectedWorkspace || "", skipNumberOfFiles, isHostAUnixBasedSystem);
+      const filesWithSize = await CommitsRetriever.getContributorsPerFile(selectedWorkspace || "", skipNumberOfFiles);
       ContributorsPerFilePanel.createOrShow(filesWithSize, this._config, this.context, isHostAUnixBasedSystem);
     } catch(error) {
       MessagePrinter.printLine(error);

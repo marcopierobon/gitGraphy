@@ -80,8 +80,7 @@ export default class ContributorsPerFilePanel {
               ContributorsPerFilePanel.currentFilesBeingSkipped += 10;
               filesWithSizes = await CommitsRetriever.getContributorsPerFile(
                 selectedWorkspace || "",
-                ContributorsPerFilePanel.currentFilesBeingSkipped,
-                isHostAUnixBasedSystem
+                ContributorsPerFilePanel.currentFilesBeingSkipped
               );
               MessagePrinter.printLine("Previous files shown");
               isReDrawNecessary = true;
@@ -97,8 +96,7 @@ export default class ContributorsPerFilePanel {
               ContributorsPerFilePanel.currentFilesBeingSkipped -= 10;
               filesWithSizes = await CommitsRetriever.getContributorsPerFile(
                 selectedWorkspace || "",
-                ContributorsPerFilePanel.currentFilesBeingSkipped,
-                isHostAUnixBasedSystem
+                ContributorsPerFilePanel.currentFilesBeingSkipped
               );
               isReDrawNecessary = true;
             } else {
