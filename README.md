@@ -20,7 +20,8 @@ Command | Description
 --- | ---
 ```Git Graphy: View Commits``` | View Commit Chart by author.
 ```Git Graphy: View Commits Per File``` | View Commit Chart per file.
-```Git Graphy: View Largest files``` | Show the largest files in the repository (working in * nix and OSX systems).
+```Git Graphy: View Largest files``` | Show the largest files in the repository.
+```GitGraphy: View the files with the most contributors``` | Show the files with the most contributors in the repository.
 
 ## Output samples
 
@@ -31,6 +32,10 @@ Command | Description
 ### Git Graphy: View Commits Per File on the EF core repo
 
 ![commits per files output](design/commitsPerFile.gif)
+
+### Git Graphy: View the files with the most contributors on the oidc angular repo
+
+![contributors per files output](design/contributorsPerFile.gif)
 
 ## License
 

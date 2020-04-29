@@ -1,3 +1,7 @@
+## 1.0.13 (29 Apr 2020)
+* Added the GitGraphy: View the files with the most contributors to highlight the files changes by the highest 
+amount of developers.
+
 ## 1.0.12 (28 Apr 2020)
 * Extended the large file visualisation to support Windows
 * Extend the large file visualisation to analyse all the files in the repo in the first scan and to reuse the scan when

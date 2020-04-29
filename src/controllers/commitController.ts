@@ -5,6 +5,8 @@ import CommitRetrieverService from '../services/CommitsRetriever';
 import ConfigurationService from '../services/ConfigurationRetriever';
 import MessagePrinter from '../services/MessagePrinter';
 import WorkspaceDeterminer from '../services/WorkspaceDeterminer';
+import CommitsRetriever from '../services/CommitsRetriever';
+import ContributorsPerFilePanel from '../views/commits-panel/ContributorsPerFileView';
 
 export default class {
   context:vscode.ExtensionContext;
@@ -13,6 +15,24 @@ export default class {
     this.context = context;
     this._config = ConfigurationService.getCommitChartConfiguration();
   }
+
+  public async showContributorsPerFilePanel(isHostAUnixBasedSystem: boolean | undefined) {
+    if(isHostAUnixBasedSystem === undefined){
+      const couldNotDetermineTheOs = "Could not determine the os";
+      vscode.window.showInformationMessage(couldNotDetermineTheOs);
+      MessagePrinter.printLine(couldNotDetermineTheOs);
+      return;
+    }
+    var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
+    var skipNumberOfFiles = 0;
+    try {
+      const filesWithSize = await CommitsRetriever.getContributorsPerFile(selectedWorkspace || "", skipNumberOfFiles);
+      ContributorsPerFilePanel.createOrShow(filesWithSize, this._config, this.context, isHostAUnixBasedSystem);
+    } catch(error) {
+      MessagePrinter.printLine(error);
+    }
+  }
+
   public async showCommitsPanel() {
     var selectedWorkspace = WorkspaceDeterminer.determineRightNamespaceToBeAnalysed();
 
