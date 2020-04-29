@@ -1,3 +1,6 @@
+## 1.0.14 (29 Apr 2020)4
+* Updated logo file
+
 ## 1.0.13 (29 Apr 2020)
 * Added the GitGraphy: View the files with the most contributors to highlight the files changes by the highest 
 amount of developers.
