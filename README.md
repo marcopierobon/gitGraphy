@@ -2,7 +2,8 @@
 
 # GitGraphy
 
-[![Build Status](https://dev.azure.com/pierobond/GitGraphy/_apis/build/status/marcopierobon.gitGraphy?branchName=master)](https://dev.azure.com/pierobond/GitGraphy/_build/latest?definitionId=2&branchName=master)[![Marketplace Version](https://vsmarketplacebadge.apphb.com/version-short/marco-pierobon.git-graphy.svg?logo=visual-studio-code&color=pink)]
+[![Build Status](https://dev.azure.com/pierobond/GitGraphy/_apis/build/status/marcopierobon.gitGraphy?branchName=master)](https://dev.azure.com/pierobond/GitGraphy/_build/latest?definitionId=2&branchName=master)
+[![Marketplace Version](https://vsmarketplacebadge.apphb.com/version-short/marco-pierobon.git-graphy.svg?logo=visual-studio-code&color=pink)](https://marketplace.visualstudio.com/items?itemName=marco-pierobon.git-graphy)
 
 ## Description
 
