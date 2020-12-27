@@ -19,9 +19,9 @@ Open the Command Palette (Command+Shift+P on macOS and Ctrl+Shift+P on Windows/L
 
 Command | Description
 --- | ---
-```Git Graphy: View Commits``` | View Commit Chart by author.
-```Git Graphy: View Commits Per File``` | View Commit Chart per file.
-```Git Graphy: View Largest files``` | Show the largest files in the repository.
+```GitGraphy: View Commits``` | View Commit Chart by author.
+```GitGraphy: View Commits Per File``` | View Commit Chart per file.
+```GitGraphy: View Largest files``` | Show the largest files in the repository.
 ```GitGraphy: View the files with the most contributors``` | Show the files with the most contributors in the repository.
 
 ## Output samples
