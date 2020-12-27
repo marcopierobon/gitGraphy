@@ -3,7 +3,7 @@
   "displayName": "GIT Graphy",
   "description": "Show repo statistics directly within Visual Studio Code.",
   "publisher": "marco-pierobon",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "engines": {
     "vscode": "^1.36.0"
   },
