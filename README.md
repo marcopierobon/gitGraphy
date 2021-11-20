@@ -14,8 +14,15 @@ Visualize statistics of your git repository directly within Visual Studio Code.
 - View number of commits per file as a bar (based on [chartjs](https://www.chartjs.org/))
 - Display the biggest files in the repo (based on [chartjs](https://www.chartjs.org/))
 
-## Useful commands
-Open the Command Palette (Command+Shift+P on macOS and Ctrl+Shift+P on Windows/Linux) and type in one of the following commands:
+## How to use the extension
+1. Open the Command Palette via the shortcut specific to your OS:
+
+- on OSX: Press `⇧⌘P` (aka `SHIFT+CMD+P`)
+- on Windows: Press `Ctrl+Shift+P` then type 
+
+2. Then type: `GitGraphy:`. At this point you should see the available graphs listed.
+
+3. Finally, select one of the existing commands (listed below)
 
 Command | Description
 --- | ---
