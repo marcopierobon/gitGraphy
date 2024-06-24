@@ -1,4 +1,7 @@
-## 1.0.14 (29 Apr 2020)4
+## 1.0.15 (27 Dec 2020)
+* Corrected execution syntax in the Readme file.
+
+## 1.0.14 (29 Apr 2020)
 * Updated logo file
 
 ## 1.0.13 (29 Apr 2020)
